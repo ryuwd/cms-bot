@@ -1,5 +1,8 @@
-from cms_static import GH_CMSSW_ORGANIZATION,GH_CMSSW_REPO,CMSBUILD_GH_USER
 from os.path import basename,dirname,abspath
+#from cms_static import GH_CMSSW_ORGANIZATION,GH_CMSSW_REPO,CMSBUILD_GH_USER
+GH_CMSSW_ORGANIZATION="LArSoft"
+GH_CMSSW_REPO="github-bot"
+CMSBUILD_GH_USER="gartung"
 #GH read/write token: Use default ~/.github-token-cmsbot
 GH_TOKEN="~/.github-token-cmsbot"
 #GH readonly token: Use default ~/.github-token-readonly
@@ -13,7 +16,7 @@ CREATE_EXTERNAL_ISSUE=False
 #Jenkins CI server: User default http://cmsjenkins05.cern.ch:8080/cms-jenkins
 JENKINS_SERVER="https://buildmaster.fnal.gov/buildmaster"
 #GH Web hook pass phrase. This is encrypeted used bot keys.
-GITHUB_WEBHOOK_TOKEN='U2FsdGVkX1+GEHdp/Cmu73+ctvrzSGXc9OvL+8bZyjOe6ZPkqr/GIPgpJHiEp+hR'
+GITHUB_WEBHOOK_TOKEN=''
 #Set to True if you want bot to add build/test labels to your repo
 ADD_LABELS=False
 #Set to True if you want bot to add GH webhooks. cmsbot needs admin rights

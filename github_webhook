@@ -50,7 +50,7 @@ opener=build_opener(HTTPSClientAuthHandler(PEM_FILE))
 install_opener(opener)
 
 
-def check_event(data):
+def check_event(data, repo_config):
   if not 'HTTP_X_GITHUB_EVENT' in os.environ: return False,''
   event = os.environ['HTTP_X_GITHUB_EVENT']
   if not event in ['issues', 'issue_comment', 'pull_request' , 'push']: 
@@ -95,10 +95,9 @@ def check_event(data):
     print('Github event type "%s" is not configured for repo "%s"\n' % (event, full_name))
     return False,event
   if (event == 'pull_request'):
-    print('Github event type "%s" is configured for repo "%s"\n' % (event, full_name))
     return True,event
   elif (event == 'issues') and (not data['action'] in ['opened']):
-    print('Repo %s/%s: event is "issues" but action "%s" in not in "%s".\n' % (full_name, data['action'], ['opened']))
+    print('Repo %s: event is "issues" but action "%s" in not in "%s".\n' % (full_name, data['action'], ['opened']))
     return False,event
   elif (event == 'issue_comment'):
     #if (not data['action'] in ['created','edited','deleted']): return False,event
@@ -118,7 +117,6 @@ def check_event(data):
       print('Repo %s/%s: event is "issue_comment" but user "%s" is not in valid_admins "%s".\n' % (org, repo, user,valid_admins))
       return False, event
 
-  print('Github event type "%s" is configured for repo "%s"\n' % (event, full_name))
   return True, event
 
 #check signature function
@@ -128,18 +126,20 @@ def check_signature(data, repo_config):
   if sha_name != 'sha1': return False
   secret_file = BASE_DIRECTORY+'/github_hook_secret'
   try:
+    print('Trying GITHUB_WEBHOOK_TOKEN authentication.\n')
     from commands import getstatusoutput as run_cmd
     err, out = run_cmd("echo '%s' | openssl enc -d -a -base64 -aes-256-cbc -salt -pass file:%s" % (repo_config.GITHUB_WEBHOOK_TOKEN, secret_file))
     if err: return False
     secret = out.strip("\n")
   except:
+    print('Trying github_webhook_secret authentication.\n')
     try:
       secret = open(secret_file).read().split('\n')[0].strip()
     except Exception as e:
-      print("Unable to read secret file")
+      print("Unable to read secret file %s" % secret_file)
       return False
   mac = hmac.new(str(secret), msg=data, digestmod=sha1)
-  print(str(mac.hexdigest()) , str(signature))
+  #print(str(mac.hexdigest()) , str(signature))
   return str(mac.hexdigest()) == str(signature)
 
 #check source ip in white list fucntion
@@ -147,13 +147,13 @@ def check_ip():
   sip = os.environ['REMOTE_ADDR']
   if 'HTTP_X_FORWARDED_FOR' in os.environ and os.environ['HTTP_X_FORWARDED_FOR']!='':
     sip = os.environ['HTTP_X_FORWARDED_FOR']
-  print("GH IP",sip)
+  #print("GH IP",sip)
   for ip_net in [i.strip() for i in open(BASE_DIRECTORY+'/github-hook-meta.txt').readlines()]:
     ip, mask = ip_net.split('/')
     mask = int(mask)
     ip = ''.join(["{0:08b}".format(int(i)) for i in ip.split('.') ])[0:mask]
     src_ip = ''.join([ "{0:08b}".format(int(i)) for i in sip.split('.')])[0:mask]
-    print("Checking %s vs %s" % (ip, src_ip))
+    #print("Checking %s vs %s" % (ip, src_ip))
     if ip == src_ip:
       return True
   return False
@@ -178,7 +178,6 @@ sys.path.insert(0,os.path.join(BASE_DIRECTORY,"github-bot"))
 sys.path.insert(0,os.path.join(BASE_DIRECTORY,"github-bot/repos",repo_name.replace("-","_")))
 import repo_config
 from github_hooks_config import get_repository_hooks, is_valid_gh_repo
-
 
 #keep a copy of the json sent from Github
 if 'HTTP_X_GITHUB_DELIVERY' in os.environ:
@@ -205,7 +204,7 @@ else:
 
 
 #check valid data of source
-valid, event = check_event(payload)
+valid, event = check_event(payload, repo_config)
 if valid:
   print('Passed event validation\n')
 else:
