@@ -98,7 +98,7 @@ def check_event(data):
     print('Github event type "%s" is configured for repo "%s"\n' % (event, full_name))
     return True,event
   elif (event == 'issues') and (not data['action'] in ['opened']):
-    print('Repo %s/%s: event is "issues" but action "%s" in not in "%s".\n' % (full_name, data['action', ['opened']))
+    print('Repo %s/%s: event is "issues" but action "%s" in not in "%s".\n' % (full_name, data['action'], ['opened']))
     return False,event
   elif (event == 'issue_comment'):
     #if (not data['action'] in ['created','edited','deleted']): return False,event
@@ -165,6 +165,14 @@ try:
 except Exception as e:
   print("Invalid data, can not read json input")
   sys.exit()
+
+
+if 'HTTP_X_GITHUB_EVENT' in os.environ:
+  event = os.environ['HTTP_X_GITHUB_EVENT']
+  if not event in ['issues', 'issue_comment', 'pull_request' , 'push']: 
+    print('Unhandled github event type "%s"\n' % event)
+    sys.exit()
+
 repo_name = payload["repository"]["full_name"]
 sys.path.insert(0,os.path.join(BASE_DIRECTORY,"github-bot"))
 sys.path.insert(0,os.path.join(BASE_DIRECTORY,"github-bot/repos",repo_name.replace("-","_")))
@@ -184,7 +192,7 @@ with open('%s/%s.json' % (BASE_DIRECTORY,filename), 'w') as f:
 #check valid IP of source
 if check_ip():
   print('Passed IP address range check\n')
-else 
+else:
   print('Failed IP address range check\n')
 # non fatal as access is controled by cgi-bin/.htaccess
 
@@ -237,12 +245,12 @@ headers.update(crumb)
 
 
 #trigger jenkins job
-for x in [(json.dumps({"parameter":xparam}),"github-webhook")]:
+for x in [(json.dumps({"parameter":xparam}),"dispatch-github-webhook")]:
   jenkins_parameters, job = x
   if not job: continue
   url = repo_config.JENKINS_SERVER+'/job/'+ job + '/build'
   url = 'https://buildmaster.fnal.gov/buildmaster/job/%s/build' % job
-  print(jenkins_parameters,job)
+  print(jenkins_parameters,url)
   data = {
               "json": jenkins_parameters,
               "Submit": "Build"
