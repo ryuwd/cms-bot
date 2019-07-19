@@ -5,6 +5,7 @@ from _py2with3compatibility import Request, urlopen, urlencode, unquote, HTTPSHa
 import os, sys, json, hmac, re
 
 print("Content-Type: text/html\n")
+print("You have reached the Fermilab SCD GITHUB WEBHOOK processor.\n")
 BASE_DIRECTORY = "/web/sites/s/scd-ci.fnal.gov/data"
 PEM_FILE = '%s/ci_cert.pem' % BASE_DIRECTORY
 
@@ -78,7 +79,7 @@ def check_event(data, repo_config):
   if (event == 'push'):
     branch = data["ref"]
     if not branch.startswith("refs/heads/"):
-      print('Repo "%s" branch ref "%s" does not start with "refs/heads/".\n' % (full_name, branch))
+      print('Repo "%s" ref "%s" does not start with "refs/heads/".\n' % (full_name, branch))
       return False, event
     if not ok_event:
       if not get_repository_hooks(full_name,"Jenkins_Github_Hook_Push"):
@@ -120,23 +121,23 @@ def check_event(data, repo_config):
   return True, event
 
 #check signature function
-def check_signature(data, repo_config):
+def check_signature(data):
   if not 'HTTP_X_HUB_SIGNATURE' in os.environ: return False
   sha_name, signature = os.environ['HTTP_X_HUB_SIGNATURE'].split('=')
   if sha_name != 'sha1': return False
-  secret_file = BASE_DIRECTORY+'/github_hook_secret'
+  secret_file = BASE_DIRECTORY+'/github_master_secret'
+  print('Trying GITHUB_WEBHOOK_TOKEN from repo_config for signature authentication.\n')
+  from commands import getstatusoutput as run_cmd
   try:
-    print('Trying GITHUB_WEBHOOK_TOKEN authentication.\n')
-    from commands import getstatusoutput as run_cmd
-    err, out = run_cmd("echo '%s' | openssl enc -d -a -base64 -aes-256-cbc -salt -pass file:%s" % (repo_config.GITHUB_WEBHOOK_TOKEN, secret_file))
+    err, out = run_cmd('echo "%s" | openssl enc -d -a -base64 -aes-256-cbc -salt -pass file:%s' % (repo_config.GITHUB_WEBHOOK_TOKEN, secret_file))
     if err: return False
     secret = out.strip("\n")
   except:
-    print('Trying github_webhook_secret authentication.\n')
     try:
       secret = open(secret_file).read().split('\n')[0].strip()
+      print('Trying secret from file github_master_secret for signature authentication.\n')
     except Exception as e:
-      print("Unable to read secret file %s" % secret_file)
+      print("Unable to read master secret file" % secret_file)
       return False
   mac = hmac.new(str(secret), msg=data, digestmod=sha1)
   #print(str(mac.hexdigest()) , str(signature))
@@ -190,26 +191,26 @@ with open('%s/%s.json' % (BASE_DIRECTORY,filename), 'w') as f:
 
 #check valid IP of source
 if check_ip():
-  print('Passed IP address range check\n')
+  print('Passed GitHub IP address range check\n')
 else:
-  print('Failed IP address range check\n')
+  print('Failed GitHub IP address range check\n')
 # non fatal as access is controled by cgi-bin/.htaccess
 
 #check valid signature of source
-if check_signature(data,repo_config):
-  print('Passed signature validation\n')
+if check_signature(data):
+  print('Passed GitHub signature authentication\n')
 else:
-  print('Failed signature validation\n')
-#  sys.exit()
+  print('Failed GitHub signature authentication\n')
+  sys.exit()
 
 
 #check valid data of source
 valid, event = check_event(payload, repo_config)
 if valid:
-  print('Passed event validation\n')
+  print('Passed GitHub event validation\n')
 else:
-  print('Failed event validation\n')
-#  sys.exit()
+  print('Failed GitHub event validation\n')
+  sys.exit()
 
 xparam = []
 xparam.append({"name":"REPOSITORY","value":repo_name})
@@ -249,7 +250,7 @@ for x in [(json.dumps({"parameter":xparam}),"dispatch-github-webhook")]:
   if not job: continue
   url = repo_config.JENKINS_SERVER+'/job/'+ job + '/build'
   url = 'https://buildmaster.fnal.gov/buildmaster/job/%s/build' % job
-  print(jenkins_parameters,url)
+  #print(jenkins_parameters,url)
   data = {
               "json": jenkins_parameters,
               "Submit": "Build"
@@ -257,6 +258,6 @@ for x in [(json.dumps({"parameter":xparam}),"dispatch-github-webhook")]:
   try:
     data = urlencode(data)
     req = Request(url=url,data=data,headers=headers)
-    content = urlopen(req).read()
+    #content = urlopen(req).read()
   except Exception as e:
     print("Unable to start jenkins job:",e)
