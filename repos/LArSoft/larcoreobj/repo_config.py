@@ -1,17 +1,17 @@
 from os.path import basename,dirname,abspath
 #from cms_static import GH_CMSSW_ORGANIZATION,GH_CMSSW_REPO,CMSBUILD_GH_USER
 GH_CMSSW_ORGANIZATION="LArSoft"
-GH_CMSSW_REPO="github-bot"
-CMSBUILD_GH_USER="gartung"
-#GH read/write token: Use default ~/.github-token-cmsbot
-GH_TOKEN="~/.github-token-cmsbot"
+GH_CMSSW_REPO="larcoreobj"
+CMSBUILD_GH_USER="scdbuild"
+#GH read/write token: Use default ~/.github-token-scdbot
+GH_TOKEN="~/.github-token-scdbot"
 #GH readonly token: Use default ~/.github-token-readonly
 GH_TOKEN_READONLY="~/.github-token-readonly"
 CONFIG_DIR=dirname(abspath(__file__))
-#GH bot user: Use default cmsbot
-CMSBUILD_USER="cmsbot"
+#GH bot user: Use default scdbot
+CMSBUILD_USER="scdbot"
 GH_REPO_ORGANIZATION=basename(dirname(CONFIG_DIR))
-GH_REPO_FULLNAME="LArSoft/github-bot"
+GH_REPO_FULLNAME="LArSoft/larcoreobj"
 CREATE_EXTERNAL_ISSUE=False
 #Jenkins CI server: User default http://cmsjenkins05.cern.ch:8080/cms-jenkins
 JENKINS_SERVER="https://buildmaster.fnal.gov/buildmaster"
@@ -20,7 +20,7 @@ GITHUB_WEBHOOK_TOKEN="""U2FsdGVkX19akbUO9GV/sfW46u9HUcJxcJtAo1oHRWOzTjeib95Ivymr
 +C0TsoP8i5gHZ3gq/g9bVQ=="""
 #Set to True if you want bot to add build/test labels to your repo
 ADD_LABELS=False
-#Set to True if you want bot to add GH webhooks. cmsbot needs admin rights
+#Set to True if you want bot to add GH webhooks. scdbot needs admin rights
 ADD_WEB_HOOK=False
 #List of issues/pr which bot should ignore
 IGNORE_ISSUES = [10]
