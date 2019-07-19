@@ -125,7 +125,7 @@ def check_signature(data):
   if not 'HTTP_X_HUB_SIGNATURE' in os.environ: return False
   sha_name, signature = os.environ['HTTP_X_HUB_SIGNATURE'].split('=')
   if sha_name != 'sha1': return False
-  secret_file = BASE_DIRECTORY+'/github_master_secret'
+  secret_file = BASE_DIRECTORY+'/github_webhook_secret'
   print('Trying GITHUB_WEBHOOK_TOKEN from repo_config for signature authentication.\n')
   from commands import getstatusoutput as run_cmd
   try:
@@ -258,6 +258,6 @@ for x in [(json.dumps({"parameter":xparam}),"dispatch-github-webhook")]:
   try:
     data = urlencode(data)
     req = Request(url=url,data=data,headers=headers)
-    #content = urlopen(req).read()
+    content = urlopen(req).read()
   except Exception as e:
     print("Unable to start jenkins job:",e)
