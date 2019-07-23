@@ -43,7 +43,8 @@ if __name__ == "__main__":
   import repo_config
   from process_pr import process_pr
   from categories import EXTERNAL_REPOS
-  gh = Github(login_or_token=open(expanduser(repo_config.GH_TOKEN)).read().strip())
+  #gh = Github(login_or_token=open(expanduser(repo_config.GH_TOKEN)).read().strip())
+  gh = Github(login_or_token=os.environ['GITHUBTOKEN'])
   api_rate_limits(gh)
   repos = []
   if opts.repository != "externals":

@@ -1,35 +1,34 @@
-from cms_static import GH_CMSSW_ORGANIZATION,GH_CMSSW_REPO,CMSBUILD_GH_USER
 from os.path import basename,dirname,abspath
-#GH read/write token: Use default ~/.github-token-cmsbot
-GH_TOKEN="~/.github-token-cmsbot"
-#GH readonly token: Use default ~/.github-token-readonly
-GH_TOKEN_READONLY="~/.github-token-readonly"
+#from cms_static import GH_CMSSW_ORGANIZATION,GH_CMSSW_REPO,CMSBUILD_GH_USER
+GH_CMSSW_ORGANIZATION="gartung"
+GH_CMSSW_REPO="github-bot"
+CMSBUILD_GH_USER="FNALbuild"
+GH_TOKEN=os.environ['GITHUBTOKEN']
+GH_TOKEN_READONLY=os.environ['GITHUBTOKEN']
 CONFIG_DIR=dirname(abspath(__file__))
 #GH bot user: Use default cmsbot
 CMSBUILD_USER="cmsbot"
-GH_REPO_ORGANIZATION="cms-patatrack"
-GH_REPO_FULLNAME="cms-patatrack/cmssw"
+GH_REPO_ORGANIZATION=basename(dirname(CONFIG_DIR))
+GH_REPO_FULLNAME="gartung/cms-bot"
 CREATE_EXTERNAL_ISSUE=False
 #Jenkins CI server: User default http://cmsjenkins05.cern.ch:8080/cms-jenkins
-JENKINS_SERVER="http://cmsjenkins05.cern.ch:8080/cms-jenkins"
+JENKINS_SERVER="https://buildmaster.fnal.gov/buildmaster"
 #GH Web hook pass phrase. This is encrypeted used bot keys.
-GITHUB_WEBHOOK_TOKEN='''U2FsdGVkX19C9pvh4GUbgDDUy0G9tSJZu7pFoQ0QodGMQtb/h4AFOKPsBxKlORAz
-KXg7+k1B6egPueUzlaJ9BA=='''
+GITHUB_WEBHOOK_TOKEN="""U2FsdGVkX19akbUO9GV/sfW46u9HUcJxcJtAo1oHRWOzTjeib95IvymrqUUcxCrv
++C0TsoP8i5gHZ3gq/g9bVQ=="""
 #Set to True if you want bot to add build/test labels to your repo
-ADD_LABELS=True
+ADD_LABELS=False
 #Set to True if you want bot to add GH webhooks. cmsbot needs admin rights
 ADD_WEB_HOOK=False
 #List of issues/pr which bot should ignore
-IGNORE_ISSUES = []
+IGNORE_ISSUES = [10]
 #Set the Jenkins slave label is your tests needs special machines to run.
-JENKINS_SLAVE_LABEL="slc7_amd64 && GPU"
+JENKINS_SLAVE_LABEL=""
 #For cmsdist/cmssw repos , set it to False if you do not want to run standard cms pr tests
-CMS_STANDARD_TESTS=True
+CMS_STANDARD_TESTS=False
 #Map your branches with cmssw branches for tests
-#User Branch => CMSSW/CMSDIST Bracnh
+#User Branch => CMSSW/CMSDIST Branch
 CMS_BRANCH_MAP={
-  'CMSSW_10_1_X_Patatrack' : 'CMSSW_10_1_X',
-  'CMSSW_10_2_X_Patatrack' : 'CMSSW_10_2_X'
 }
 #Valid Web hooks e.g. '.+' to match all event
 VALID_WEB_HOOKS=['.+']

@@ -51,7 +51,7 @@ if __name__ == "__main__":
   if args.pull == 0: parser.error("Missing pull request number.")
   if not args.branch: parser.error("Missing branch name.")
 
-  gh = Github(login_or_token=open(expanduser("~/.github-token")).read().strip())
+  gh = Github(login_or_token=os.environ['GITHUBTOKEN'])
   gh_repo = gh.get_repo(GH_CMSSW_ORGANIZATION+"/"+args.repository)
   pr = gh_repo.get_pull(args.pull)
   res = backport_pull (gh_repo, pr, args.branch)

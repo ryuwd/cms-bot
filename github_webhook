@@ -5,7 +5,7 @@ from _py2with3compatibility import Request, urlopen, urlencode, unquote, HTTPSHa
 import os, sys, json, hmac, re
 
 print("Content-Type: text/html\n")
-print("You have reached the Fermilab SCD GITHUB WEBHOOK processor.\n")
+print("You have reached the Fermilab GITHUB WEBHOOK processor.\n")
 BASE_DIRECTORY = "/web/sites/s/scd-ci.fnal.gov/data"
 PEM_FILE = '%s/ci_cert.pem' % BASE_DIRECTORY
 
@@ -125,11 +125,12 @@ def check_signature(data):
   if not 'HTTP_X_HUB_SIGNATURE' in os.environ: return False
   sha_name, signature = os.environ['HTTP_X_HUB_SIGNATURE'].split('=')
   if sha_name != 'sha1': return False
-  secret_file = BASE_DIRECTORY+'/github_webhook_secret'
+  secret_file = BASE_DIRECTORY+'/github_master_secret'
   print('Trying GITHUB_WEBHOOK_TOKEN from repo_config for signature authentication.\n')
   from commands import getstatusoutput as run_cmd
   try:
     err, out = run_cmd('echo "%s" | openssl enc -d -a -base64 -aes-256-cbc -salt -pass file:%s' % (repo_config.GITHUB_WEBHOOK_TOKEN, secret_file))
+    #print(err, out)
     if err: return False
     secret = out.strip("\n")
   except:

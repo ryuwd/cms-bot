@@ -180,7 +180,7 @@ def update_release_map(new_br, dryRun=False):
   run_cmd("mv %s.new %s" % (relmap_file,relmap_file))
   
 def process(cycle, dryRun):
-  gh = Github(login_or_token=open(expanduser("~/.github-token")).read().strip())
+  gh = Github(login_or_token=os.environ['GITHUBTOKEN'])
   cmssw_repo   = gh.get_repo(GH_CMSSW_ORGANIZATION+"/"+GH_CMSSW_REPO)
   srcMileStone = get_milestone(cmssw_repo, CMSSW_DEVEL_BRANCH)
 

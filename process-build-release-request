@@ -787,10 +787,11 @@ if __name__ == "__main__":
     parser.print_help()
     parser.error( "Too many arguments" )
 
-  GH_TOKEN = open( expanduser("~/.github-token")).read().strip()
+  #GH_TOKEN = open( expanduser("~/.github-token")).read().strip()
   
   issue_id  = int( args[ 0 ] )
-  gh = Github( login_or_token=GH_TOKEN )
+  #gh = Github( login_or_token=GH_TOKEN )
+  gh = Github(login_or_token=os.environ['GITHUBTOKEN'])
   api_rate_limits(gh)
   cmssw_repo = gh.get_repo( GH_CMSSW_ORGANIZATION + '/' + GH_CMSSW_REPO )
   issue = cmssw_repo.get_issue( issue_id )

@@ -4,8 +4,8 @@ import sys, json
 from os.path import expanduser
 from _py2with3compatibility import Request, urlopen
 from cms_static import GH_CMSSW_ORGANIZATION, GH_CMSSW_REPO
-
-GH_TOKEN = open( expanduser("~/.github-token")).read().strip()
+import os.environ
+GH_TOKEN = os.environ['GITHUBTOKEN']
 release_name = sys.argv[1]
 branch =  sys.argv[2]
 print('Creating release:\n %s based on %s' % (release_name, branch))

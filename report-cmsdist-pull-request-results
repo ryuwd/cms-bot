@@ -92,7 +92,7 @@ if __name__ == "__main__":
   action = args[ 4 ]
   package_name = args[ 5 ]
 
-  TOKEN=open( expanduser( "~/.github-token" ) ).read( ).strip( )
+  TOKEN=os.environ['GITHUBTOKEN']
   GH = Github( login_or_token=TOKEN )
   CMSDIST_REPO = GH.get_organization( GH_CMSSW_ORGANIZATION ).get_repo( GH_CMSDIST_REPO )
   issue = CMSDIST_REPO.get_issue( issue_id )

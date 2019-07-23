@@ -18,7 +18,7 @@ if __name__ == "__main__":
   repo = "cms-sw/cmssw"
   try: repo = argv[2]
   except: pass
-  gh = Github(login_or_token=open(expanduser("~/.github-token")).read().strip())
+  gh = Github(login_or_token=os.environ['GITHUBTOKEN'])
   try:
     pr = gh.get_repo(repo).get_pull(prId)
   except Exception as ex:

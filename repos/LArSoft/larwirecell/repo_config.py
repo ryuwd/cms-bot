@@ -2,11 +2,10 @@ from os.path import basename,dirname,abspath
 #from cms_static import GH_CMSSW_ORGANIZATION,GH_CMSSW_REPO,CMSBUILD_GH_USER
 GH_CMSSW_ORGANIZATION="LArSoft"
 GH_CMSSW_REPO="larwirecell"
-CMSBUILD_GH_USER="scdbuild"
-#GH read/write token: Use default ~/.github-token-scdbot
-GH_TOKEN="~/.github-token-scdbot"
-#GH readonly token: Use default ~/.github-token-readonly
-GH_TOKEN_READONLY="~/.github-token-readonly"
+CMSBUILD_GH_USER="FNALbuild"
+import os.environ
+GH_TOKEN=os.environ['GITHUBTOKEN']
+GH_TOKEN_READONLY=os.environ['GITHUBTOKEN']
 CONFIG_DIR=dirname(abspath(__file__))
 #GH bot user: Use default scdbot
 CMSBUILD_USER="scdbot"

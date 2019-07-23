@@ -88,8 +88,8 @@ if __name__ == "__main__":
   #---------------------------------
   # pyGithub intialization
   #---------------------------------
-
-  token = open(expanduser("~/.github-token")).read().strip() 
+  import os.environ
+  token = os.environ['GITHUBTOKEN']
   github = Github( login_or_token = token )
   CMSSW_REPO = github.get_repo(CMSSW_REPO_NAME)
   CMSDIST_REPO =  github.get_repo(CMSDIST_REPO_NAME)
