@@ -7,6 +7,7 @@ from github import Github
 import json
 from sys import exit
 import re
+from os import environ
 from cms_static import GH_CMSSW_REPO, GH_CMSDIST_REPO, GH_CMSSW_ORGANIZATION
 from github_utils import prs2relnotes, get_merge_prs
 from socket import setdefaulttimeout
@@ -88,8 +89,9 @@ if __name__ == "__main__":
   #---------------------------------
   # pyGithub intialization
   #---------------------------------
-  import os.environ
-  token = os.environ['GITHUBTOKEN']
+  token = open(expanduser("~/.github-token")).read().strip()
+  if 'GITHUBTOKEN' in environ:
+    token = environ['GITHUBTOKEN']
   github = Github( login_or_token = token )
   CMSSW_REPO = github.get_repo(CMSSW_REPO_NAME)
   CMSDIST_REPO =  github.get_repo(CMSDIST_REPO_NAME)

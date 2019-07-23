@@ -17,6 +17,7 @@ from github_utils import get_ported_PRs
 from socket import setdefaulttimeout
 setdefaulttimeout(120)
 import json
+from os import environ
 
 if __name__ == "__main__":
   parser = ArgumentParser()
@@ -39,7 +40,9 @@ if __name__ == "__main__":
   since = datetime (2000,1,1)
   if args.since:
     since = datetime.strptime(args.since, '%Y-%m-%dT%H:%M')
-  GH_TOKEN = os.environ['GITHUBTOKEN']
+  GH_TOKEN = open(expanduser("~/.github-token")).read().strip()
+  if 'GITHUBTOKEN' in environ:
+    GH_TOKEN = environ['GITHUBTOKEN']
   gh = Github(login_or_token=GH_TOKEN)
 
   try:

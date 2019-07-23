@@ -6,7 +6,7 @@ from optparse import OptionParser
 from categories import CMSSW_CATEGORIES, CMSSW_L2
 from datetime import datetime, timedelta
 import re
-import os.environ
+from os import environ
 
 if __name__ == "__main__":
   parser = OptionParser(usage="%prog <since-n-seconds>")
@@ -21,7 +21,9 @@ if __name__ == "__main__":
     parser.error("Please specify the number of seconds since you want updates")
 
   since = datetime.utcnow() - timedelta(seconds=int(args[0]))
-  gh = Github(login_or_token=os.environ['GITHUBTOKEN'])
+  gh = Github(login_or_token=open(expanduser("~/.github-token")).read().strip())
+  if 'GITHUBTOKEN' in environ:
+    gh = Github(login_or_token=environ['GITHUBTOKEN'])
   repo = gh.get_repo( opts.repository )
 
   if opts.only_tests_pending:
