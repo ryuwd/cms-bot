@@ -179,7 +179,7 @@ if __name__ == "__main__":
   release_name = args[ 4 ]
   action = args[ 5 ]
 
-  GH = Github( login_or_token=os.environ['GITHUBTOKEN'] )
+  GH = Github( login_or_token=environ['GITHUBTOKEN'] )
   cmssw_repo = GH.get_repo( GH_CMSSW_ORGANIZATION + '/' + GH_CMSSW_REPO )
   print('API Rate Limit')
   print('Limit, Remaining: ', GH.rate_limiting)

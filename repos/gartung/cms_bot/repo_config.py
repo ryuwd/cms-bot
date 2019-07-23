@@ -1,10 +1,13 @@
 from os.path import basename,dirname,abspath
+from os import environ
 #from cms_static import GH_CMSSW_ORGANIZATION,GH_CMSSW_REPO,CMSBUILD_GH_USER
 GH_CMSSW_ORGANIZATION="gartung"
 GH_CMSSW_REPO="github-bot"
 CMSBUILD_GH_USER="FNALbuild"
-GH_TOKEN=os.environ['GITHUBTOKEN']
-GH_TOKEN_READONLY=os.environ['GITHUBTOKEN']
+#This is overridden by GITHUBTOKEN env var
+GH_TOKEN="~/.github-token-scdbot"
+#This is overridden by GITHUBTOKEN env var
+GH_TOKEN_READONLY="~/.github-token-readonly"
 CONFIG_DIR=dirname(abspath(__file__))
 #GH bot user: Use default cmsbot
 CMSBUILD_USER="cmsbot"

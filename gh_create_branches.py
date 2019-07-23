@@ -35,8 +35,10 @@ if __name__ == "__main__":
 
   print(args.cmssw)
   print(args.cmsdist)
-
-  GH_TOKEN = os.environ['GITHUBTOKEN']
+  from os import environ
+  GH_TOKEN = open(expanduser("~/.github-token")).read().strip()
+  if 'GITHUBTOKEN' in environ:
+    GH_TOKEN = environ['GITHUBTOKEN']
   gh = Github(login_or_token=GH_TOKEN)
   if args.cmssw:
     print("Creating CMSSW Branch(es)")

@@ -85,7 +85,10 @@ parser.add_argument("-o", "--organization", dest="organization", help="Github Or
 parser.add_argument("-n", "-dry-run", dest="dryRun", default=False, action="store_true")
 args = parser.parse_args()
 
-GH_TOKEN = os.environ['GITHUBTOKEN']
+from os import environ
+GH_TOKEN = open(expanduser("~/.github-token")).read().strip()
+if 'GITHUBTOKEN' in environ:
+  GH_TOKEN = environ['GITHUBTOKEN']
 gh = Github(login_or_token=GH_TOKEN)
 cache = {"users" : {}}
 total_changes=0

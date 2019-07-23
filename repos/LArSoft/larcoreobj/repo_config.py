@@ -3,9 +3,10 @@ from os.path import basename,dirname,abspath
 GH_CMSSW_ORGANIZATION="LArSoft"
 GH_CMSSW_REPO="larcoreobj"
 CMSBUILD_GH_USER="FNALbuild"
-import os.environ
-GH_TOKEN=os.environ['GITHUBTOKEN']
-GH_TOKEN_READONLY=os.environ['GITHUBTOKEN']
+#This is overridden by GITHUBTOKEN env var
+GH_TOKEN="~/.github-token-scdbot"
+#This is overridden by GITHUBTOKEN env var
+GH_TOKEN_READONLY="~/.github-token-readonly"
 CONFIG_DIR=dirname(abspath(__file__))
 #GH bot user: Use default scdbot
 CMSBUILD_USER="scdbot"
