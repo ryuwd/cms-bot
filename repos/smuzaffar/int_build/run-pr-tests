@@ -1,4 +1,0 @@
-#!/bin/bash -ex
-echo OK
-echo -e "+1\n\nAll OK" > $WORKSPACE/result.txt
-

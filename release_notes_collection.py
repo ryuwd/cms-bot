@@ -45,7 +45,7 @@ def get_pr(pr, repo, cmsprs):
   return {}
 
 def getReleasesNotes(opts):
-  login_or_token=open(expanduser("~/.github-token-cmsbot")).read().strip()
+  login_or_token=os.environ['GITHUBTOKEN']
   page = 1
   pages = []
   notes = []

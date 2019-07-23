@@ -12,8 +12,8 @@ if __name__ == "__main__":
   parser.add_argument("pr", type=int)
   parser.add_argument("-m", dest="message", type=str, default=None)
   args = parser.parse_args()
-
-  gh = Github(login_or_token=open(expanduser("~/.github-token")).read().strip())
+  import os.environ
+  gh = Github(login_or_token=os.environ['GITHUBTOKEN'])
   try:
     pr = gh.get_repo( 'cms-sw/cmssw' ).get_pull(args.pr)
   except:
