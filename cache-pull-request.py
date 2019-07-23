@@ -76,6 +76,7 @@ if __name__ == "__main__":
   ghtoken=".github-token"
   if opts.user: ghtoken=".github-token-"+opts.user
   gh = Github(login_or_token=open(expanduser("~/"+ghtoken)).read().strip())
+  from os import environ:
   if 'GITHUBTOKEN' in environ:
     gh = Github(login_or_token=environ['GITHUBTOKEN'])
   api_rate_limits(gh)
