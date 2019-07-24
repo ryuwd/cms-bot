@@ -45,7 +45,6 @@ for root, dirs, files in os.walk(path):
       job_info = root.split('/')
       payload['job_name'] = job_info[3]
       payload['build_number'] = job_info[-1]
-      print(payload)
       payload['url'] = "https://cmssdt.cern.ch/"+JENKINS_PREFIX+"/job/" + job_info[3] + "/" + job_info[-1] + "/"
       id = sha1(root).hexdigest()
       try:
@@ -66,6 +65,7 @@ for root, dirs, files in os.walk(path):
           payload['job_status'] = 'Running'
           all_local.append(id)
         weekindex="jenkins-jobs-"+str(int((((int(jstime)/1000)/86400)+4)/7))
+        print(payload)
         send_payload(weekindex,document,id,json.dumps(payload))
       except Exception as e:
         print("Xml parsing error",logFile , e)
@@ -81,7 +81,7 @@ else:
   for hit in content_hash['hits']['hits']:
     if hit["_index"].startswith("jenkins-jobs-") or hit["_index"].startswith("cmssdt-jenkins-jobs-"):
       try:print("Running:",hit["_source"]['job_name'],hit["_source"]['build_number'],hit["_index"],hit['_id'])
-      except: pass
+      except Exception as e: print("Error:", e)
       running_builds_elastic[hit['_id']]=hit
 for build in running_builds_elastic:
   if build not in all_local:
