@@ -10,6 +10,7 @@ from socket import setdefaulttimeout
 from github_utils import api_rate_limits
 setdefaulttimeout(120)
 import sys
+import os
 SCRIPT_DIR = dirname(abspath(sys.argv[0]))
 
 if __name__ == "__main__":
@@ -29,6 +30,8 @@ if __name__ == "__main__":
   if exists(join(repo_dir,"repo_config.py")): sys.path.insert(0,repo_dir)
   import repo_config
   gh = Github(login_or_token=open(expanduser(repo_config.GH_TOKEN)).read().strip())
+  if 'GITHUBTOKEN' in os.environ:
+    gh = Github(login_or_token=os.environ['GITHUBTOKEN'])
   if not opts.commit: api_rate_limits(gh)
   repo = gh.get_repo(opts.repository)
   if opts.commit:
