@@ -133,9 +133,7 @@ if __name__ == "__main__":
     parser.error("Too many arguments")
   prId = int(args[0])
   from os import environ
-  gh = Github(login_or_token=open(expanduser("~/.github-token")).read().strip())
-  if 'GITHUBTOKEN' in environ:
-    gh = Github(login_or_token=environ['GITHUBTOKEN'])
+  gh = Github(login_or_token=environ['GITHUBTOKEN'])
   try:
     pr = gh.get_organization("cms-sw").get_repo("cmsdist").get_pull(prId)
   except:

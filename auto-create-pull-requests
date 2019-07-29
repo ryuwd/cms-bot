@@ -27,10 +27,8 @@ MAPPINGS = {
 }
 
 if __name__ == "__main__":
-  gh = Github(login_or_token=open(expanduser("~/.github-token")).read().strip())
   from os import environ
-  if 'GITHUBTOKEN' in environ:
-    gh = Github(login_or_token=environ['GITHUBTOKEN'])
+  gh = Github(login_or_token=environ['GITHUBTOKEN'])
     
   for repo in MAPPINGS:
     try:

@@ -30,9 +30,7 @@ if __name__ == "__main__":
   commit_date = commit_date - (datetime.now() - datetime.utcnow())
   
   from os import environ
-  gh = Github(login_or_token=open(expanduser("~/.github-token")).read().strip())
-  if 'GITHUBTOKEN' in environ:
-    gh = Github(login_or_token=environ['GITHUBTOKEN'])
+  gh = Github(login_or_token=environ['GITHUBTOKEN'])
   rate_limit = gh.get_rate_limit().rate
   print('API Rate Limit')
   print('Limit: ', rate_limit.limit)

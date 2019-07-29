@@ -26,9 +26,7 @@ if __name__ == "__main__":
     exit(1)
 
   from os import environ
-  GH_TOKEN = open(expanduser("~/.github-token")).read().strip()
-  if 'GITHUBTOKEN' in environ:
-    GH_TOKEN = environ['GITHUBTOKEN']
+  GH_TOKEN = environ['GITHUBTOKEN']
   gh = Github(login_or_token=GH_TOKEN)
 
   repo = gh.get_repo(args.repository)

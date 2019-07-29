@@ -16,9 +16,7 @@ if __name__ == "__main__":
   parser.add_option("-m", "--match",       dest="match", help="Regexp to match tags e.g. CMSSW_8_0_X", type=str, default='CMSSW_.+')
   opts, args = parser.parse_args()
 
-  gh = Github(login_or_token=open(expanduser("~/.github-token")).read().strip())
-  if 'GITHUBTOKEN' in environ:
-    gh = Github(login_or_token=environ['GITHUBTOKEN'])
+  gh = Github(login_or_token=environ['GITHUBTOKEN'])
   repo =  gh.get_repo(opts.repo)
   print('API Rate Limit')
   print('Limit, Remaining: ', gh.rate_limiting)

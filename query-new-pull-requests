@@ -21,9 +21,7 @@ if __name__ == "__main__":
     parser.error("Please specify the number of seconds since you want updates")
 
   since = datetime.utcnow() - timedelta(seconds=int(args[0]))
-  gh = Github(login_or_token=open(expanduser("~/.github-token")).read().strip())
-  if 'GITHUBTOKEN' in environ:
-    gh = Github(login_or_token=environ['GITHUBTOKEN'])
+  gh = Github(login_or_token=environ['GITHUBTOKEN'])
   repo = gh.get_repo( opts.repository )
 
   if opts.only_tests_pending:

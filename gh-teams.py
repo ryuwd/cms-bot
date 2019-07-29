@@ -86,9 +86,7 @@ parser.add_argument("-n", "-dry-run", dest="dryRun", default=False, action="stor
 args = parser.parse_args()
 
 from os import environ
-GH_TOKEN = open(expanduser("~/.github-token")).read().strip()
-if 'GITHUBTOKEN' in environ:
-  GH_TOKEN = environ['GITHUBTOKEN']
+GH_TOKEN = environ['GITHUBTOKEN']
 gh = Github(login_or_token=GH_TOKEN)
 cache = {"users" : {}}
 total_changes=0

@@ -25,7 +25,5 @@ if __name__ == "__main__":
     parser.print_help()
     parser.error("Too few arguments")
   from os import environ
-  gh = Github(login_or_token=open(expanduser("~/.github-token")).read().strip())
-  if 'GITHUBTOKEN' in environ:
-    gh = Github(login_or_token=environ['GITHUBTOKEN'])
+  gh = Github(login_or_token=environ['GITHUBTOKEN'])
   port_pr(gh.get_repo(opts.repository), opts.pull_request , opts.branch, opts.dryRun)

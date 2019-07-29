@@ -1,4 +1,4 @@
-rom cms_static import GH_CMSSW_REPO as gh_cmssw
+from cms_static import GH_CMSSW_REPO as gh_cmssw
 from cms_static import GH_CMSDIST_REPO as gh_cmsdist
 from repo_config import GH_REPO_ORGANIZATION as gh_user
 from repo_config import CMSBUILD_USER

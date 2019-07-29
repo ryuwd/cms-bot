@@ -6,7 +6,8 @@ from repo_config import GH_TOKEN
 
 
 def main():
-    gh = Github(login_or_token=open(expanduser(GH_TOKEN)).read().strip())
+    from os import environ
+    gh = Github(login_or_token=environ['GITHUBTOKEN'])
     print("GitHub API rate limit: {0}".format(gh.get_rate_limit()))
 
 

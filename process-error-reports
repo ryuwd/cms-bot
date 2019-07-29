@@ -310,9 +310,7 @@ if __name__ == "__main__":
   # Parse them to have an understanding of current status.
   issues = []
   from os import environ
-  gh = Github(login_or_token=open(expanduser("~/.github-token")).read().strip())
-  if 'GITHUBTOKEN' in environ:
-      gh = Github(login_or_token=environ['GITHUBTOKEN'])
+  gh = Github(login_or_token=environ['GITHUBTOKEN'])
   repo = gh.get_organization("cms-sw").get_repo("cmssw")
   labels = repo.get_labels()
   relvalIssueLabel = [x for x in labels if x.name == "relval"]

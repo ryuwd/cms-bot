@@ -35,7 +35,8 @@ if __name__ == "__main__":
   from process_pr import TRIGERING_TESTS_MSG, TRIGERING_STYLE_TEST_MSG
   valid_types['JENKINS_TEST_URL']=[ "^\s*"+TRIGERING_TESTS_MSG+".*$", None ]
   valid_types['JENKINS_STYLE_URL']=[ "^\s*"+TRIGERING_STYLE_TEST_MSG+".*$", None ]
-  gh = Github(login_or_token=open(expanduser(repo_config.GH_TOKEN)).read().strip())
+  from os import environ
+  gh = Github(login_or_token=environ['GITHUBTOKEN'])
   issue = gh.get_repo(opts.repository).get_issue(int(args[0]))
   last_comment = find_last_comment(issue, repo_config.CMSBUILD_USER ,valid_types[opts.msgtype][0])
   if not last_comment:

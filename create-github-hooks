@@ -66,9 +66,7 @@ if __name__ == "__main__":
         repos_names.append("/".join(rconf.split("/")[-3:-1]))
         print("Added User repo: ",repos_names[-1])
 
-  ghx = Github(login_or_token = open(expanduser("~/.github-token")).read().strip())
-  if 'GITHUBTOKEN' in environ:
-    ghx = Github(login_or_token = environ['GITHUBTOKEN'])
+  ghx = Github(login_or_token = environ['GITHUBTOKEN'])
   api_rate_limits(ghx)
   #get repos to be processed
   repos = {}

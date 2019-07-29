@@ -65,7 +65,8 @@ if __name__ == "__main__":
     parser.error("Too few arguments, please use either -e, -c, or -u")
 
   import repo_config
-  gh = Github(login_or_token=open(expanduser(repo_config.GH_TOKEN)).read().strip())
+  from os import environ
+  gh = Github(login_or_token=environ['GITHUBTOKEN'])
   api_rate_limits(gh)
 
   if opts.cmssw or opts.externals:
@@ -104,7 +105,7 @@ if __name__ == "__main__":
       exec('from '+".".join(repo_data)+' import categories, repo_config')
       print(repo_config.GH_TOKEN, repo_config.GH_REPO_FULLNAME)
       if not repo_config.ADD_LABELS: continue
-      gh = Github(login_or_token=open(expanduser(repo_config.GH_TOKEN)).read().strip())
+      gh = Github(login_or_token=environ['GITHUBTOKEN'])
       all_labels = COMMON_LABELS
       for lab in COMPARISON_LABELS:
         all_labels[lab] = COMPARISON_LABELS[lab]

@@ -181,9 +181,7 @@ def update_release_map(new_br, dryRun=False):
   
 def process(cycle, dryRun):
   from os import environ
-  gh = Github(login_or_token=open(expanduser("~/.github-token")).read().strip())
-  if 'GITHUBTOKEN' in environ:
-    gh = Github(login_or_token=environ['GITHUBTOKEN'])
+  gh = Github(login_or_token=environ['GITHUBTOKEN'])
   cmssw_repo   = gh.get_repo(GH_CMSSW_ORGANIZATION+"/"+GH_CMSSW_REPO)
   srcMileStone = get_milestone(cmssw_repo, CMSSW_DEVEL_BRANCH)
 

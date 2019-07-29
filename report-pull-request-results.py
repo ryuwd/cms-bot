@@ -628,8 +628,8 @@ if (ACTION == 'prBot.py'):
   exit()
 
 print('you chose the action %s' % ACTION)
-
-TOKEN = open(expanduser(repo_config.GH_TOKEN)).read().strip()
+from os import environ
+TOKEN = environ['GITHUBTOKEN']
 github = Github( login_or_token = TOKEN )
 api_rate_limits(github)
 

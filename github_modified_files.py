@@ -31,8 +31,8 @@ def main():
     parser.add_argument("-l", "--logging", default="DEBUG", choices=logging._levelNames, help="Set level of logging")
     args = parser.parse_args()
     logger.setLevel(args.logging)
-
-    gh = Github(login_or_token=open(expanduser(GH_TOKEN)).read().strip())
+    from os import environ
+    gh = Github(login_or_token=environ['GITHUBTOKEN'])
     repo = gh.get_repo(args.repo)
 
     old_prs_dict = {}

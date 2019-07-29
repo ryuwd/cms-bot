@@ -1,4 +1,4 @@
-om os.path import basename,dirname,abspath
+from os.path import basename,dirname,abspath
 from cms_static import GH_CMSSW_ORGANIZATION,GH_CMSSW_REPO,CMSBUILD_GH_USER
 GH_CMSSW_ORGANIZATION="LArSoft"
 GH_CMSSW_REPO="github-bot"
