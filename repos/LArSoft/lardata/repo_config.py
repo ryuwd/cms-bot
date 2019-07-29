@@ -8,8 +8,8 @@ GH_TOKEN="~/.github-token-FNALbuild"
 #This is overridden by GITHUBTOKEN env var
 GH_TOKEN_READONLY="~/.github-token-readonly"
 CONFIG_DIR=dirname(abspath(__file__))
-#GH bot user: Use default cmsbot
-CMSBUILD_USER="cmsbot"
+#GH bot user: Use default LArSoft/core
+CMSBUILD_USER="LArSoft/core"
 GH_REPO_ORGANIZATION=basename(dirname(CONFIG_DIR))
 GH_REPO_FULLNAME="LArSoft/lardata"
 CREATE_EXTERNAL_ISSUE=False
@@ -20,7 +20,7 @@ GITHUB_WEBHOOK_TOKEN="""U2FsdGVkX19akbUO9GV/sfW46u9HUcJxcJtAo1oHRWOzTjeib95Ivymr
 +C0TsoP8i5gHZ3gq/g9bVQ=="""
 #Set to True if you want bot to add build/test labels to your repo
 ADD_LABELS=True
-#Set to True if you want bot to add GH webhooks. cmsbot needs admin rights
+#Set to True if you want bot to add GH webhooks. LArSoft/core needs admin rights
 ADD_WEB_HOOK=False
 #List of issues/pr which bot should ignore
 IGNORE_ISSUES = [10]

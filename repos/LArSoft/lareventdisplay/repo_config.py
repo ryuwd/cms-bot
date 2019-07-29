@@ -9,7 +9,7 @@ GH_TOKEN="~/.github-token-FNALbuild"
 GH_TOKEN_READONLY="~/.github-token-readonly"
 CONFIG_DIR=dirname(abspath(__file__))
 #GH bot user: Use default FNALbuild
-CMSBUILD_USER="cmsbot"
+CMSBUILD_USER="LArSoft/core"
 GH_REPO_ORGANIZATION=basename(dirname(CONFIG_DIR))
 GH_REPO_FULLNAME="LArSoft/lareventdisplay"
 CREATE_EXTERNAL_ISSUE=False
