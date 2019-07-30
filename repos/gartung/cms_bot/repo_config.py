@@ -1,5 +1,4 @@
 from os.path import basename,dirname,abspath
-#from cms_static import GH_CMSSW_ORGANIZATION,GH_CMSSW_REPO,CMSBUILD_GH_USER
 GH_CMSSW_ORGANIZATION="gartung"
 GH_CMSSW_REPO="github-bot"
 CMSBUILD_GH_USER="FNALbuild"
@@ -35,3 +34,4 @@ CMS_BRANCH_MAP={
 #Valid Web hooks e.g. '.+' to match all event
 VALID_WEB_HOOKS=['.+']
 
+def file2Package(filename): return GH_REPO_ORGANIZATION

@@ -34,3 +34,5 @@ CMS_BRANCH_MAP={
 #Valid Web hooks e.g. '.+' to match all event
 VALID_WEB_HOOKS=['.+']
 
+def file2Package(filename): return GH_REPO_ORGANIZATION
+
