@@ -12,7 +12,7 @@ for cat in CMSSW_CATEGORIES:
 
 files = {}
 for f in sys.argv[1:]:
-    file_pack = '/'.join(f.split('/')[:2])
+    file_pack = f.split('/')[0]
     cat = 'unknown'
     if file_pack in pack2cat: cat = '-'.join(sorted(pack2cat[file_pack]))
-    print('%s %s' % (cat, file_pack))
+    print('category: %s package: %s' % (cat, file_pack))
