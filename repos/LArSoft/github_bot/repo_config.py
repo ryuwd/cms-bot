@@ -1,4 +1,5 @@
 from os.path import basename,dirname,abspath
+GH_CMSDIST_REPO  = 'cmsdist'
 GH_CMSSW_ORGANIZATION="LArSoft"
 GH_CMSSW_REPO="github-bot"
 CMSBUILD_GH_USER="FNALbuild"
