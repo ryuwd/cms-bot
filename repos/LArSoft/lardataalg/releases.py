@@ -3,7 +3,7 @@
 # Any PR open against this will be automatically closed by cms-bot (Pr should be made for master branch)
 # For new release cycle just change this and make sure to add its milestone and production branches
 
-CMSSW_DEVEL_BRANCH = "develop"
+CMSSW_DEVEL_BRANCH = "development_branch"
 RELEASE_BRANCH_MILESTONE={}
 RELEASE_BRANCH_CLOSED=[]
 RELEASE_BRANCH_PRODUCTION=[]
