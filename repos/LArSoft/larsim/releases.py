@@ -1,6 +1,6 @@
 #Default development branch
-# Changes from master branch will be merge in to it
-# Any PR open against this will be automatically closed by cms-bot (Pr should be made for master branch)
+# Changes from develop branch will be merge in to it
+# Any PR open against this will be automatically closed by cms-bot (Pr should be made for develop branch)
 # For new release cycle just change this and make sure to add its milestone and production branches
 
 CMSSW_DEVEL_BRANCH = "development_branch"

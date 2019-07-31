@@ -323,11 +323,11 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
       return
     if cmssw_repo and cms_repo and (pr.base.ref == CMSSW_DEVEL_BRANCH):
       if pr.state != "closed":
-        print("This pull request must go in to master branch")
+        print("This pull request must go in to develop branch")
         if not dryRun:
-          edit_pr(get_token(gh), repo.full_name, prId, base="master")
-          msg = format("@%(user)s, %(dev_branch)s branch is closed for direct updates. cms-bot is going to move this PR to master branch.\n"
-                       "In future, please use cmssw master branch to submit your changes.\n",
+          edit_pr(get_token(gh), repo.full_name, prId, base="develop")
+          msg = format("@%(user)s, %(dev_branch)s branch is closed for direct updates. FNALbuild is going to move this PR to develop branch.\n"
+                       "In future, please use LArSoft repo develop branch to submit your changes.\n",
                        user=requestor,
                        dev_branch=CMSSW_DEVEL_BRANCH)
           issue.create_comment(msg)
@@ -338,7 +338,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     # signatures it requires.
     if cmssw_repo or not external_repo:
       if cmssw_repo:
-        if (pr.base.ref=="master"): signing_categories.add("code-checks")
+        if (pr.base.ref=="develop"): signing_categories.add("code-checks")
         updateMilestone(repo, issue, pr, dryRun)
       packages = sorted([x for x in set([cmssw_file2Package(repo_config, f)
                            for f in get_changed_files(repo, pr)])])
@@ -392,7 +392,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
       if not has_category:
         new_package_message = "\nThe following packages do not have a category, yet:\n\n"
         new_package_message += "\n".join([package for package in packages if not package in all_packages]) + "\n"
-        new_package_message += "Please create a PR for https://github.com/cms-sw/cms-bot/blob/master/categories_map.py to assign category\n"
+        new_package_message += "Please create a PR for https://github.com/LArSoft/github-bot/blob/master/categories_map.py to assign category\n"
         print(new_package_message)
         signing_categories.add("new-package")
 
@@ -1118,7 +1118,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
   elif (not already_seen) or pull_request_updated:
     if not already_seen: commentMsg = messageNewPR
     else: commentMsg = messageUpdatedPR
-    if (not triggerred_code_checks) and cmssw_repo and (pr.base.ref=="master") and ("code-checks" in signatures) and (signatures["code-checks"]=="pending"):
+    if (not triggerred_code_checks) and cmssw_repo and (pr.base.ref=="develop") and ("code-checks" in signatures) and (signatures["code-checks"]=="pending"):
       trigger_code_checks=True
   elif new_categories:
     commentMsg = messageUpdatedPR
