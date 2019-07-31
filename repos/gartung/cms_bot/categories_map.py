@@ -1,3 +1,3 @@
 CMSSW_CATEGORIES = {
-  'cms_bot': ['',],
+  'cms-bot': ['cms-bot',],
 }
