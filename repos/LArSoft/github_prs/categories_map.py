@@ -1,3 +1,3 @@
 CMSSW_CATEGORIES = {
-  'github_prs': ['',],
+  'github-prs': ['github-prs',],
 }
