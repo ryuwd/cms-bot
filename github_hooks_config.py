@@ -19,7 +19,8 @@ GITHUB_HOOKS["Jenkins_Github_Hook_Push"] = {
 
 #First repository name matches wins
 REPO_HOOK_MAP = []
-REPO_HOOK_MAP.append(["LArSoft/.+", ["Jenkins_Github_Hook","Jenkins_Github_Hook_Push"]])
+REPO_HOOK_MAP.append(["LArSoft/github-bot", ["Jenkins_Github_Hook_Push"]])
+REPO_HOOK_MAP.append(["LArSoft/lar*", ["Jenkins_Github_Hook","Jenkins_Github_Hook_Push"]])
 
 def is_valid_gh_repo(repo_name):
   import re

@@ -20,6 +20,7 @@ def get_secret(hook_name):
     secret_file = '/data/secrets/' + hook_name
     if not exists(secret_file):
       secret_file = '/data/secrets/github_hook_secret_cmsbot'
+  print(secret_file)
   return open(secret_file,'r').read().split('\n')[0].strip()
 #match hook config
 def match_config(new,old):
@@ -88,7 +89,8 @@ if __name__ == "__main__":
         print("Skipped Web hook:",repo_name)
         continue
       isUserRepo = True
-      gh = Github(login_or_token=open(expanduser(repo_config.GH_TOKEN)).read().strip())
+      from os import environ
+      gh = Github(login_or_token=environ['GITHUBTOKEN'])
       repo_name = repo_config.GH_REPO_FULLNAME
     print("Checking for repo ",repo_name)
     if isUserRepo:

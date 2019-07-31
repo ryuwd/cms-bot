@@ -1,6 +1,6 @@
 from os.path import basename,dirname,abspath
 GH_CMSSW_ORGANIZATION="gartung"
-GH_CMSSW_REPO="github-bot"
+GH_CMSSW_REPO="cms-bot"
 CMSBUILD_GH_USER="FNALbuild"
 #This is overridden by GITHUBTOKEN env var
 GH_TOKEN="~/.github-token-scdbot"
@@ -20,7 +20,7 @@ GITHUB_WEBHOOK_TOKEN="""U2FsdGVkX19akbUO9GV/sfW46u9HUcJxcJtAo1oHRWOzTjeib95Ivymr
 #Set to True if you want bot to add build/test labels to your repo
 ADD_LABELS=True
 #Set to True if you want bot to add GH webhooks. cmsbot needs admin rights
-ADD_WEB_HOOK=False
+ADD_WEB_HOOK=True
 #List of issues/pr which bot should ignore
 IGNORE_ISSUES = [10]
 #Set the Jenkins slave label is your tests needs special machines to run.
@@ -31,7 +31,6 @@ CMS_STANDARD_TESTS=False
 #User Branch => CMSSW/CMSDIST Branch
 CMS_BRANCH_MAP={
 }
-#Valid Web hooks e.g. '.+' to match all event
-VALID_WEB_HOOKS=['.+']
-
+VALID_WEB_HOOKS=["issues","pull_request","issue_comment","push"]
+OPEN_ISSUE_FOR_PUSH_TESTS=True
 def file2Package(filename): return GH_CMSSW_REPO
