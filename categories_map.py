@@ -1354,6 +1354,7 @@ CMSSW_CATEGORIES = {
     "Utilities/RelMon",
   ],
   "simulation": [
+    "BigProducts/Simulation",
     "DataFormats/CSCDigi",
     "DataFormats/CTPPSDetId",
     "DataFormats/CTPPSDigi",
@@ -1398,6 +1399,7 @@ CMSSW_CATEGORIES = {
     "SimCalorimetry/EcalZeroSuppressionAlgos",
     "SimCalorimetry/EcalZeroSuppressionProducers",
     "SimCalorimetry/HGCalSimProducers",
+    "SimCalorimetry/HGCalSimAlgos",
     "SimCalorimetry/HcalSimAlgos",
     "SimCalorimetry/HcalSimProducers",
     "SimCalorimetry/HcalTestBeam",
@@ -1567,6 +1569,7 @@ CMSSW_CATEGORIES = {
     "SimCalorimetry/EcalEBTrigPrimAlgos",
     "SimCalorimetry/EcalEBTrigPrimProducers",
     "SimCalorimetry/HGCalSimProducers",
+    "SimCalorimetry/HGCalSimAlgos",
     "SimDataFormats/GEMDigiSimLink",
     "SimFastTiming/Configuration",
     "SimFastTiming/FastTimingCommon",

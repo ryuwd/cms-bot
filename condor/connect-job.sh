@@ -18,13 +18,14 @@ SLAVE_LABELS=$($WORKSPACE/cache/cms-bot/jenkins/system-info.sh "${JENKINS_SLAVE_
 if [ $(nproc) -lt 8 ] ; then
   SLAVE_LABELS="${SLAVE_LABELS} scripts" 
 fi
+if [ "X${EXTRA_LABELS}" != "X" ] ; then SLAVE_LABELS="${SLAVE_LABELS} ${EXTRA_LABELS}" ;fi
 
 JENKINS_WEBHOOK="${JENKINS_WEBHOOK-https://cmssdt.cern.ch/SDT/cgi-bin/condor_webhook}"
 JOB_ID=$(grep '^ *ClusterId *=' ${_CONDOR_JOB_AD} | sed 's|.*= *||;s| ||g').0
 SCHEDD_NAME=$(grep '^ *GlobalJobId *=' ${_CONDOR_JOB_AD} | sed 's|.*= *||;s|#.*||;s|"||g')
 TOKEN="$(sha256sum ~/private/secrets/github_hook_secret | sed 's| .*||')"
 SIGNATURE=$(echo -n "${JOB_ID}:${WORKSPACE} ${TOKEN}" | sha256sum | sed 's| .*||')
-JENKINS_PAYLOAD='{"jenkins_url":"@JENKINS_CALLBACK@","signature":"'${SIGNATURE}'","work_dir":"'${WORKSPACE}'","schedd_name":"'${SCHEDD_NAME}'","condor_job_id":"'${JOB_ID}'","labels":"'${SLAVE_LABELS}'","status":"@STATE@"}'
+JENKINS_PAYLOAD='{"jenkins_url":"'${JENKINS_CALLBACK}'","signature":"'${SIGNATURE}'","work_dir":"'${WORKSPACE}'","schedd_name":"'${SCHEDD_NAME}'","condor_job_id":"'${JOB_ID}'","labels":"'${SLAVE_LABELS}'","status":"@STATE@"}'
 
 CURL_OPTS='-s -k -f --retry 3 --retry-delay 5 --max-time 30 -X POST'
 if [ ! -f ${LOCAL_DATA}/online ] ; then

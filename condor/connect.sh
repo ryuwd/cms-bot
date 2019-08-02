@@ -24,6 +24,7 @@ REQUEST_UNIVERSE="${REQUEST_UNIVERSE-vanilla}"
 REQUEST_MAXRUNTIME="${REQUEST_MAXRUNTIME-432000}"
 DEBUG="${DEBUG-false}"
 JENKINS_CALLBACK="${JENKINS_CALLBACK-http://cmsjenkins03.cern.ch:8080/jenkins/}"
+
 if [ $REQUEST_CPUS -lt 1 ] ; then REQUEST_CPUS=1 ; fi
 if [ $REQUEST_MAXRUNTIME -lt 3600 ] ; then REQUEST_MAXRUNTIME=3600 ; fi
 ##########################################
@@ -39,14 +40,14 @@ done
 cp $SLAVE_JAR_DIR/slave.jar slave.jar
 cp ${here}/connect.sub job.sub
 cp ${here}/connect-job.sh  ${script_name}.sh
-sed -i -e "s|@REQUEST_MAXRUNTIME@|$REQUEST_MAXRUNTIME|" ${script_name}.sh
-sed -i -e "s|@JENKINS_CALLBACK@|$JENKINS_CALLBACK|" ${script_name}.sh
 chmod +x ${script_name}.sh
 
 sed -i -e "s|@SCRIPT_NAME@|${script_name}|"             job.sub
 sed -i -e "s|@REQUEST_CPUS@|$REQUEST_CPUS|"             job.sub
 sed -i -e "s|@REQUEST_UNIVERSE@|$REQUEST_UNIVERSE|"     job.sub
 sed -i -e "s|@REQUEST_MAXRUNTIME@|$REQUEST_MAXRUNTIME|" job.sub
+echo "environment = \"EXTRA_LABELS='${EXTRA_LABELS}' JENKINS_CALLBACK=${JENKINS_CALLBACK} REQUEST_MAXRUNTIME=${REQUEST_MAXRUNTIME}\"" >> job.sub
+
 if [ "X${CONDOR_JOB_CONF}" != "X" ] ; then
   if [ -f  ${CONDOR_JOB_CONF} ] ; then
     cat ${CONDOR_JOB_CONF} >> job.sub
@@ -69,6 +70,8 @@ echo "$JOBID" > job.id
 
 EXIT_CODE=1
 PREV_JOB_STATUS=""
+KINIT_COUNT=0
+kinit -R
 while true ; do
   JOB_STATUS=$(condor_q -json -attributes JobStatus $JOBID | grep 'JobStatus' | sed 's|.*: *||;s| ||g')
   eval JOB_STATUS_MSG=$(echo \$$(echo JOBS_STATUS_${JOB_STATUS}))
@@ -93,6 +96,12 @@ while true ; do
     break
   fi
   sleep $WAIT_GAP
+  let KINIT_COUNT=KINIT_COUNT+1
+  if [ $KINIT_COUNT -ge 120 ] ; then
+    KINIT_COUNT=0
+    kinit -R
+    klist
+  fi
 done
 echo EXIT_CODE $EXIT_CODE
 condor_transfer_data $JOBID || true
