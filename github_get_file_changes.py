@@ -96,7 +96,8 @@ def main():
 
     logger.setLevel(args.logging)
     logger.debug(args.repo_name)
-    gh = Github(login_or_token=open(expanduser(GH_TOKEN)).read().strip())
+    from os import environ
+    gh = Github(login_or_token=environ['GITHUBTOKEN'])
     repo = gh.get_repo(args.repo_name)
     pr_list = get_pull_requests(repo, branch='master')
     logger.debug("GitHub API rate limit before: {}".format(gh.get_rate_limit()))

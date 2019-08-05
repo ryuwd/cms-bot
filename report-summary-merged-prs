@@ -1445,7 +1445,8 @@ if __name__ == "__main__":
     print_verbose('Installed Releases:')
     print_verbose(installedReleases)
     prs_file = GITHUB_IO_REPO + "/_data/prs_cmssw_cache.json"
-    token = open(expanduser("~/.github-token")).read().strip()
+    from os import environ
+    token = environ['GITHUBTOKEN']
     github = Github(login_or_token=token)
     CMSSW_REPO = github.get_repo(CMSSW_REPO_NAME)
 

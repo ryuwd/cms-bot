@@ -309,7 +309,8 @@ if __name__ == "__main__":
   # Get from github all the issues which are associated to failing relvals.
   # Parse them to have an understanding of current status.
   issues = []
-  gh = Github(login_or_token=open(expanduser("~/.github-token")).read().strip())
+  from os import environ
+  gh = Github(login_or_token=environ['GITHUBTOKEN'])
   repo = gh.get_organization("cms-sw").get_repo("cmssw")
   labels = repo.get_labels()
   relvalIssueLabel = [x for x in labels if x.name == "relval"]

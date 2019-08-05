@@ -24,6 +24,6 @@ if __name__ == "__main__":
   if not opts.pull_request or not opts.branch:
     parser.print_help()
     parser.error("Too few arguments")
-
-  gh = Github(login_or_token=open(expanduser("~/.github-token")).read().strip())
+  from os import environ
+  gh = Github(login_or_token=environ['GITHUBTOKEN'])
   port_pr(gh.get_repo(opts.repository), opts.pull_request , opts.branch, opts.dryRun)

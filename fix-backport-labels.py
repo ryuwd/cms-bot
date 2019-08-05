@@ -22,8 +22,8 @@ repo_dir = join(SCRIPT_DIR,'repos',opts.repository.replace("-","_"))
 if exists(join(repo_dir,"repo_config.py")): sys.path.insert(0,repo_dir)
 import repo_config
 from process_pr import get_backported_pr
-  
-gh = Github(login_or_token=open(expanduser(repo_config.GH_TOKEN)).read().strip())
+from os import environ
+gh = Github(login_or_token=environ['GITHUBTOKEN'])
 repo = gh.get_repo(opts.repository)
 label = [ repo.get_label("backport") ]
 issues = repo.get_issues(state="open", sort="updated", labels=label)

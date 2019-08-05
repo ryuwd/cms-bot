@@ -20,6 +20,7 @@ def get_secret(hook_name):
     secret_file = '/data/secrets/' + hook_name
     if not exists(secret_file):
       secret_file = '/data/secrets/github_hook_secret_cmsbot'
+  print(secret_file)
   return open(secret_file,'r').read().split('\n')[0].strip()
 #match hook config
 def match_config(new,old):
@@ -66,7 +67,7 @@ if __name__ == "__main__":
         repos_names.append("/".join(rconf.split("/")[-3:-1]))
         print("Added User repo: ",repos_names[-1])
 
-  ghx = Github(login_or_token = open(expanduser("~/.github-token")).read().strip())
+  ghx = Github(login_or_token = environ['GITHUBTOKEN'])
   api_rate_limits(ghx)
   #get repos to be processed
   repos = {}
@@ -88,7 +89,8 @@ if __name__ == "__main__":
         print("Skipped Web hook:",repo_name)
         continue
       isUserRepo = True
-      gh = Github(login_or_token=open(expanduser(repo_config.GH_TOKEN)).read().strip())
+      from os import environ
+      gh = Github(login_or_token=environ['GITHUBTOKEN'])
       repo_name = repo_config.GH_REPO_FULLNAME
     print("Checking for repo ",repo_name)
     if isUserRepo:
@@ -113,10 +115,11 @@ if __name__ == "__main__":
       print("checking for web hook", hook)
       hook_conf = hk_conf[hook]
       hook_conf["name"] = "web"
-      hook_conf["config"]["insecure_ssl"] = "1"
+      hook_conf["config"]["insecure_ssl"] = "0"
       hook_conf["config"]["secret"] = get_secret(hook)
       hook_conf["config"]["name"] = hook
       hook_conf["config"]["data"] = hashlib.sha256(hook_conf["config"]["secret"].encode()).hexdigest()
+      print(hook_conf)
       if hook in repo_hooks_all:
         old_hook = repo_hooks_all[hook]
         if opts.force or not match_config(hook_conf,old_hook):

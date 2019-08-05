@@ -28,8 +28,9 @@ if __name__ == "__main__":
     opts.tag = opts.branch + "_" + commit_date.strftime("%Y-%m-%d-%H00")
 
   commit_date = commit_date - (datetime.now() - datetime.utcnow())
-
-  gh = Github(login_or_token=open(expanduser("~/.github-token")).read().strip())
+  
+  from os import environ
+  gh = Github(login_or_token=environ['GITHUBTOKEN'])
   rate_limit = gh.get_rate_limit().rate
   print('API Rate Limit')
   print('Limit: ', rate_limit.limit)

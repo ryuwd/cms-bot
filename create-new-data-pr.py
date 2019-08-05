@@ -25,8 +25,8 @@ if __name__ == "__main__":
   parser.add_option("-p", "--pull-request", dest="pull_request", help="Pull request number",
                     type=str, default=None)
   opts, args = parser.parse_args()
-
-  gh = Github(login_or_token=open(expanduser(repo_config.GH_TOKEN)).read().strip())
+  from os import environ 
+  gh = Github(login_or_token=environ['GITHUBTOKEN'])
 
   data_repo = gh.get_repo(opts.data_repo)
   data_prid = int(opts.pull_request)

@@ -25,7 +25,8 @@ if __name__ == "__main__":
     print("Missing source or destination branch")
     exit(1)
 
-  GH_TOKEN = open(expanduser("~/.github-token")).read().strip()
+  from os import environ
+  GH_TOKEN = environ['GITHUBTOKEN']
   gh = Github(login_or_token=GH_TOKEN)
 
   repo = gh.get_repo(args.repository)

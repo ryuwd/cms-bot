@@ -3,7 +3,7 @@ GITHUB_HOOKS["Jenkins_Github_Hook"] = {
   "active":True,
   "events":  ["issues","pull_request","issue_comment"],
   "config": {
-    "url": "https://cmssdt.cern.ch/SDT/cgi-bin/github_webhook",
+    "url": "https://scd-ci.fnal.gov/cgi-bin/github_webhook",
     "content_type":"json"
   }
 }
@@ -12,25 +12,15 @@ GITHUB_HOOKS["Jenkins_Github_Hook_Push"] = {
   "active":True,
   "events":  ["push"],
   "config": {
-    "url": "https://cmssdt.cern.ch/SDT/cgi-bin/github_webhook?push",
+    "url": "https://scd-ci.fnal.gov/cgi-bin/github_webhook?push",
     "content_type":"json"
   }
 }
 
 #First repository name matches wins
 REPO_HOOK_MAP = []
-REPO_HOOK_MAP.append(["cms-sw/cms-sw.github.io", ["Jenkins_Github_Hook_Push"]])
-REPO_HOOK_MAP.append(["cms-sw/cms-prs", ["Jenkins_Github_Hook_Push"]])
-REPO_HOOK_MAP.append(["cms-sw/genproductions", ["Jenkins_Github_Hook_Push"]])
-REPO_HOOK_MAP.append(["cms-sw/hlt-confdb", ["Jenkins_Github_Hook_Push"]])
-REPO_HOOK_MAP.append(["cms-sw/xsecdb", ["Jenkins_Github_Hook_Push"]])
-REPO_HOOK_MAP.append(["cms-sw/web-confdb", ["Jenkins_Github_Hook_Push"]])
-REPO_HOOK_MAP.append(["cms-sw/RecoLuminosity-LumiDB", ["Jenkins_Github_Hook_Push"]])
-REPO_HOOK_MAP.append(["cms-sw/DQM-Integration", ["Jenkins_Github_Hook_Push"]])
-REPO_HOOK_MAP.append(["cms-sw/.+", ["Jenkins_Github_Hook","Jenkins_Github_Hook_Push"]])
-REPO_HOOK_MAP.append(["cms-sw/.+", ["Jenkins_Github_Hook","Jenkins_Github_Hook_Push"]])
-REPO_HOOK_MAP.append(["cms-data/.+", ["Jenkins_Github_Hook","Jenkins_Github_Hook_Push"]])
-REPO_HOOK_MAP.append(["cms-externals/.+", ["Jenkins_Github_Hook","Jenkins_Github_Hook_Push"]])
+REPO_HOOK_MAP.append(["LArSoft/github-bot", ["Jenkins_Github_Hook_Push"]])
+REPO_HOOK_MAP.append(["LArSoft/lar*", ["Jenkins_Github_Hook","Jenkins_Github_Hook_Push"]])
 
 def is_valid_gh_repo(repo_name):
   import re

@@ -9,6 +9,7 @@ from socket import setdefaulttimeout
 from github_utils import api_rate_limits
 from cmsutils import get_config_map_properties
 from sys import argv
+import copy
 setdefaulttimeout(120)
 SCRIPT_DIR = dirname(abspath(argv[0]))
 
@@ -65,7 +66,8 @@ if __name__ == "__main__":
     parser.error("Too few arguments, please use either -e, -c, or -u")
 
   import repo_config
-  gh = Github(login_or_token=open(expanduser(repo_config.GH_TOKEN)).read().strip())
+  from os import environ
+  gh = Github(login_or_token=environ['GITHUBTOKEN'])
   api_rate_limits(gh)
 
   if opts.cmssw or opts.externals:
@@ -102,14 +104,15 @@ if __name__ == "__main__":
     for rconf in glob(join(SCRIPT_DIR,"repos","*","*","repo_config.py")):
       repo_data = rconf.split("/")[-4:-1]
       exec('from '+".".join(repo_data)+' import categories, repo_config')
-      print(repo_config.GH_TOKEN, repo_config.GH_REPO_FULLNAME)
       if not repo_config.ADD_LABELS: continue
-      gh = Github(login_or_token=open(expanduser(repo_config.GH_TOKEN)).read().strip())
-      all_labels = COMMON_LABELS
+      gh = Github(login_or_token=environ['GITHUBTOKEN'])
+      all_labels = copy.deepcopy(COMMON_LABELS)
       for lab in COMPARISON_LABELS:
         all_labels[lab] = COMPARISON_LABELS[lab]
-      for cat in categories.COMMON_CATEGORIES+list(categories.CMSSW_CATEGORIES.keys()):
+      for cat in categories.COMMON_CATEGORIES:
         for lab in LABEL_TYPES:
           all_labels[cat+"-"+lab]=LABEL_TYPES[lab]
-      setRepoLabels (gh, repo_config.GH_REPO_FULLNAME, all_labels, opts.dryRun)
 
+      for lab in LABEL_TYPES:
+        all_labels[repo_config.GH_CMSSW_REPO+"-"+lab]=LABEL_TYPES[lab]
+      setRepoLabels (gh, repo_config.GH_REPO_FULLNAME, all_labels, opts.dryRun)

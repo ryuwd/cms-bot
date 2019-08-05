@@ -75,8 +75,8 @@ if __name__ == "__main__":
   prId = int(args[0])
   ghtoken=".github-token"
   if opts.user: ghtoken=".github-token-"+opts.user
-
-  gh = Github(login_or_token=open(expanduser("~/"+ghtoken)).read().strip())
+  from os import environ
+  gh = Github(login_or_token=environ['GITHUBTOKEN'])
   api_rate_limits(gh)
   data = process(gh.get_repo(opts.repository), prId, args[1])
   if opts.dryRun: print(dumps(data))

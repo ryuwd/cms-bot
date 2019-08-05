@@ -3,6 +3,7 @@ from __future__ import print_function
 from github import Github
 from os.path import expanduser
 from argparse import ArgumentParser
+from os import environ
 
 parser = ArgumentParser()
 parser.add_argument("-r", "--repository", dest="repo", help="Github Repositoy name e.g cms-sw/cms-bot",type=str)
@@ -18,7 +19,7 @@ if not args.base_branch: parser.error("Missing base branch name.")
 if not args.feature_branch: parser.error("Missing feature branch name.")
 if not args.title: parser.error("Missing PR title")
 print("Authenticating to Github and connecting to repo")
-gh = Github(login_or_token = open(expanduser("~/.github-token")).read().strip())
+gh = Github(login_or_token = environ['GITHUBTOKEN'])
 print("Authentication succeeeded")
 gh_repo = gh.get_repo(args.repo)
 print("Creating pull request")
