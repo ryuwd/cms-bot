@@ -97,6 +97,7 @@ def create_properties_file_tests(repository, pr_number, cmsdist_pr, cmssw_prs, d
   repo_partsX=repository.replace("/","-")
   out_file_name = 'trigger-%s-%s-%s.properties' % (req_type, repo_partsX, pr_number)
   parameters = {}
+  parameters['REPOSITORY']=repository
   if extra_prop:
     for x in extra_prop:
       parameters[x]=extra_prop[x]
