@@ -14,7 +14,7 @@ EXTERNAL_CATEGORIES = [ "externals" ]
 EXTERNAL_REPOS = [ ]
 
 CMSSW_REPOS = [ gh_user+"/"+gh_cmssw ]
-CMSDIST_REPOS = [ gh_user+"/"+gh_cmsdist ]
+CMSDIST_REPOS = [ ]
 CMSSW_ISSUES_TRACKERS = list(set(CMSSW_L1))
 COMPARISON_MISSING_MAP = []
 

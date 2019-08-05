@@ -10,7 +10,7 @@ CONFIG_DIR=dirname(abspath(__file__))
 #GH bot user: Use default FNALbuild
 CMSBUILD_USER="FNALbuild"
 GH_REPO_ORGANIZATION=basename(dirname(CONFIG_DIR))
-GH_REPO_FULLNAME="LArSoft/larana"
+GH_REPO_FULLNAME="LArSoft/github-prs"
 CREATE_EXTERNAL_ISSUE=False
 #Jenkins CI server: User default http://cmsjenkins05.cern.ch:8080/cms-jenkins
 JENKINS_SERVER="https://buildmaster.fnal.gov/buildmaster"
