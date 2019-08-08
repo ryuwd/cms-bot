@@ -42,11 +42,11 @@ NOT_AUTHORIZED_MSG = 'You are not authorized to request the build of a release.'
 CONFIG_MAP_FILE = CMS_BOT_DIR+'/config.map'
 NO_ARCHS_FOUND_MSG = 'No architecures to build found for {rel_name}. Please check that you entered a ' \
                      'valid release name or that the IBs are currently enabled for {queue}'
-RELEASE_BASE_URL = 'https://github.com/cms-sw/cmssw/releases/tag/%s'
-BASE_BRANCH_URL = ' https://github.com/cms-sw/cmssw/tree/%s'
+RELEASE_BASE_URL = 'https://github.com/LArSoft/larsoft/releases/tag/%s'
+BASE_BRANCH_URL = ' https://github.com/LArSoft/larsoft/tree/%s'
 RELEASE_CREATED_MSG = 'Release created: {rel_name}. The tag was created on top of branch: {base_branch}'
 RELEASE_CREATION_FAIL_MSG = 'There was an error while attempting to create {rel_name}. ' \
-                            'Please check if it already exists https://github.com/cms-sw/cmssw/releases'
+                            'Please check if it already exists https://github.com/LArSoft/larsoft/releases'
 WRONG_RELEASE_NAME_MSG = 'The release name is malformed. Please check for typos.'
 ACK_MSG = 'Request received. I will start to build the release after one of the following approve ' \
           'the issue: {approvers_list}. You can do this by writing "+1" in a ' \
@@ -86,7 +86,7 @@ PROD_ARCH_NOT_READY_MSG = 'ATTENTION!!! The production architecture ({prod_arch}
                           'This needs to be checked before asking me to generate the release notes.\n'\
                           'When the production architecture is installed successfully, I will generate the release notes.'\
                           ' You don\'t need to write the command again.'
-REL_NAME_REGEXP="(CMSSW_[0-9]+_[0-9]+)_[0-9]+(_SLHC[0-9]*|)(_pre[0-9]+|_[a-zA-Z]*patch[0-9]+|)(_[^_]*|)"
+REL_NAME_REGEXP="(v[0-9]+)(_[0-9]+)(_[0-9]+)(_SLHC[0-9]*|)(_pre[0-9]+|_[a-zA-Z]*patch[0-9]+|)(_[^_]*|)"
 UPLOAD_COMMENT = 'upload %s'
 UPLOAD_ALL_COMMENT = '^[uU]pload all$'
 ABORT_COMMENT = '^[Aa]bort$'
@@ -107,7 +107,7 @@ ANNOUNCEMENT_TEMPLATE = 'Hi all,\n\n' \
                         '{production_arch} (production)\n'\
                         '{rest_of_archs}'\
                         'The release notes of what changed with respect to {prev_release} can be found at:\n\n'\
-                        'https://github.com/cms-sw/cmssw/releases/{rel_name}\n'\
+                        'https://github.com/LArSoft/larsoft/releases/{rel_name}\n'\
                         '{description}'\
                         'Cheers,\n'\
                         'cms-bot'
@@ -370,7 +370,7 @@ def delete_release_github( release_name ):
     return "Release %s not found." % release_name
 
   releaseId = matchingRelease[0]
-  url = "https://api.github.com/repos/cms-sw/cmssw/releases/%s" % releaseId
+  url = "https://api.github.com/repos/LArSoft/larsoft/releases/%s" % releaseId
   request = Request( url, headers={"Authorization" : "token " + GH_TOKEN })
   request.get_method = lambda: 'DELETE'
 
@@ -803,7 +803,9 @@ if __name__ == "__main__":
     print('This is a pull request, ignoring.')
     exit( 0 )
   
+  print(issue.title)
   title_match = re.match(BUILD_REL, issue.title)
+  assert(title_match)
 
   # 2. Is this issue meant to build a release?
   if not title_match:
@@ -813,14 +815,14 @@ if __name__ == "__main__":
   ALL_LABELS = [ l.name for l in cmssw_repo.get_labels() ]
   print("All labels:",ALL_LABELS)
   comments = [ c for c in issue.get_comments( ) ]
-
-  release_name = title_match.group(1)
+  release_name = title_match.groups()[1]
   # Get the release queue from the release name.
   print(release_name)
 
   issue_body = issue.body.encode("ascii", "ignore").strip()
   release_queue = None
   rel_name_match = re.match( REL_NAME_REGEXP, release_name )
+  assert(rel_name_match)
   if "RELEASE_QUEUE:" in issue_body:
     release_queue = issue_body.split("RELEASE_QUEUE:",1)[1].split("\n",1)[0].strip()
     print("Found forces release queue:",release_queue)
