@@ -9,9 +9,9 @@ from socket import setdefaulttimeout
 from github_utils import api_rate_limits, github_api,add_organization_member
 setdefaulttimeout(120)
 
-CMS_OWNERS = [ "smuzaffar", "cmsbuild", "davidlange6", "fabiocos" ]
-CMS_SDT    = [ "mrodozov", "gudrutis" ]
-CMS_ORGANIZATIONS = [ "cms-data", "cms-externals", "cms-sw" ]
+CMS_OWNERS = [ "gartung" ]
+CMS_SDT    = [ "gartung" ]
+CMS_ORGANIZATIONS = [ "LArSoft" ]
 
 REPO_OWNERS = {}
 REPO_TEAMS  = {}
@@ -24,7 +24,7 @@ for org in CMS_ORGANIZATIONS:
 #################################
 REPO_OWNERS["cms-data"]      += []
 REPO_OWNERS["cms-externals"] += []
-REPO_OWNERS["cms-sw"]        += [ "sextonkennedy" ]
+REPO_OWNERS["cms-sw"]        += [ "gartung" ]
 
 #################################
 #Set Teams for organizations    #
@@ -47,20 +47,20 @@ REPO_TEAMS["cms-sw"]["RecoLuminosity-LumiDB-admins"] = {
   "repositories" : { "RecoLuminosity-LumiDB": "admin"}
 }
 REPO_TEAMS["cms-sw"]["generators-l2"] = { 
-  "members" : ["agrohsje","efeyazgan","qliphy"], 
+  "members" : [], 
   "repositories" :  { "genproductions" : "admin",
                       "xsecdb" : "admin"}
 }
 REPO_TEAMS["cms-sw"]["Dqm-Integration-developers"] = {
-  "members" : ["rovere","deguio"],
+  "members" : [],
   "repositories" : { "DQM-Integration": "push"}
 }
 REPO_TEAMS["cms-sw"]["configdb-owners"] = {
-  "members" : ["fwyzard", "Martin-Grunewald", "vinnie87"],
+  "members" : [],
   "repositories" : { "hlt-confdb":"admin", "web-confdb":"admin"}
 }
 REPO_TEAMS["cms-sw"]["cmsdist-writers"] = {
-  "members" : [ "h4d4" ] + CMS_SDT,
+  "members" : [] + CMS_SDT,
   "repositories" : { "cmsdist":"push" }
 }
 REPO_TEAMS["cms-sw"]["cmssw-l2"] = {
@@ -76,7 +76,7 @@ REPO_TEAMS["cms-sw"]["cms-sw-writers"] = {
   "repositories" : { "*":"push", "!cmssw" : "pull", "!cmsdist" : "pull" }
 }
 REPO_TEAMS["cms-sw"]["cms-sw-admins"] = {
-  "members" : [ "smuzaffar", "gudrutis" ],
+  "members" : [ ],
   "repositories" : { "cmssdt-wiki ":"admin" }
 }
 #################################
