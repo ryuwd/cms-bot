@@ -13,7 +13,7 @@
   - If it is not a organization then please add `FNALbot` as Collaborators (under the Settings of your repository).
 - Add github webhook so that bot can get notifications.
   - If you have given admin rights to `FNALbot` and set `ADD_WEB_HOOK=True` in `repos/you_or_org/your_repo/repo_config.py` then bot can add web-hook
-  - If `FNALbot` does not have admin rights to your repository then please add yourself the github webhook (under Settings of your repository) and send @LArSoft/Core the "Secret" pass phrase so that FNALbot only recognize valid web hooks
+  - If `FNALbot` does not have admin rights to your repository then please add yourself the github webhook (under Settings of your repository) and send @FNALbot the "Secret" pass phrase so that FNALbot only recognizes valid web hooks
     - Payload URL: https://scd-ci.fnal.gov/cgi-bin/github_webhook
     - Content type: application/json
     - Secret: any password of your choice
