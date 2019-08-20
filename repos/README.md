@@ -22,7 +22,7 @@
     - Pushes (for push based events)
 
 ### Pull request Testing:
-- You can have your repository set up to trigger the tests whenever you pull some changes to your repo. In this case, please make sure that github webhook for *Pull requests* is active.
+- You can have your repository set up to trigger the tests whenever you create or update a pull request with new commits to a branch. In this case, please make sure that github webhook for *Pull requests* is active.
 
 ### Push based testsing
 - You can have your repository set up to trigger the tests whenever you push some changes to your repo. In this case, please make sure that github webhook for *Pushes* is active.
