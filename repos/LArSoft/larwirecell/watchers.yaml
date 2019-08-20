@@ -7,3 +7,5 @@
 #ghuser:
 #  - subsystem2/package1
 #  - subsystem2/package2
+LArSoft/core
+  - larwirecell
