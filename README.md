@@ -7,4 +7,4 @@ This fork of cms-bot has been modified to work with the Fermilab Jenkins infrast
 
 # Setup
 
-Please see [repos/README.md](https://github.com/LArSoft/cms-bot/blob/master/repos/README.md) for instructions on having your repos tested on the Fermilab Jenkins CI infrastructure.
+Please see the [wiki page](https://github.com/LArSoft/cms-bot/wiki/Setting-up-Pull-Requests-and-or-Push-CI-testing-for-your-organizations-repositories) for instructions on having your repos tested on the Fermilab Jenkins CI infrastructure.
