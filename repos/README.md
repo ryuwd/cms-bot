@@ -10,10 +10,10 @@
 - Add these repository directories with 'git add' and create a pull request to have them added to the master branch.
 - Allow `@FNALbot` to update your repository
   - If you have a github organization then please add github user `@FNALbot` into a team with write (or admin) rights
-  - If it is not an organization then please add `@FNALbot` as Collaborators (under the Settings of your repository).
+  - If it is not an organization then please add `@FNALbot` to the Collaborators group (under the Settings of your repository).
 - Add github webhook so that bot can get notifications.
-  - If you have given admin rights to `FNALbot` and set `ADD_WEB_HOOK=True` in `repos/you_or_org/your_repo/repo_config.py` then the bot can add web-hook
-  - If `FNALbot` does not have admin rights to your repository then please the github webhook (under Settings of your repository) manaully and send scisoft-team@listserv.fnal.gov the "Secret" pass phrase so that your web hooks can be validated. The webhook whould have the following properties.
+  - If you have given admin rights to `FNALbot` and set `ADD_WEB_HOOK=True` in `repos/you_or_org/your_repo/repo_config.py` then webhook can be added to your repo automatically.
+  - If `FNALbot` does not have admin rights to your repository then please the github webhook (under Settings of your repository) manaully and send scisoft-team@listserv.fnal.gov the "Secret" pass phrase so that your web hooks can be validated. The webhook should have the following properties.
     - Payload URL: https://scd-ci.fnal.gov/cgi-bin/github_webhook
     - Content type: application/json
     - Secret: any password of your choice
