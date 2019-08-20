@@ -8,9 +8,9 @@
   - If you have `-` in your github user or repository name then replace it with `_`
 - It is better to copy existing configuration and change it accordingly e.g. copy `repos/LArSoft/larsoft` in to `repos/(your github user or organization)/(your repo name)` and makes changes to reflect your repositories.
 - Git add these repository directories and create a pull request to have then added.
-- Allow `FNALbot` to update your repository
-  - If you have a github organization then please add github user `FNALbot` in to a team with write (or admin) rights
-  - If it is not a organization then please add `FNALbot` as Collaborators (under the Settings of your repository).
+- Allow `@FNALbot` to update your repository
+  - If you have a github organization then please add github user `@FNALbot` in to a team with write (or admin) rights
+  - If it is not a organization then please add `@FNALbot` as Collaborators (under the Settings of your repository).
 - Add github webhook so that bot can get notifications.
   - If you have given admin rights to `FNALbot` and set `ADD_WEB_HOOK=True` in `repos/you_or_org/your_repo/repo_config.py` then bot can add web-hook
   - If `FNALbot` does not have admin rights to your repository then please add yourself the github webhook (under Settings of your repository) and send scisoft-team@listserv.fnal.gov the "Secret" pass phrase so that your web hooks can be validated.
