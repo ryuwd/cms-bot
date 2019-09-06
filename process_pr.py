@@ -1134,14 +1134,17 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
       print(commentMsg.decode("ascii", "replace"))
     except:
       pass
+ 
+  # create new pull request message before code-check message
+  if commentMsg and not dryRun:
+    issue.create_comment(commentMsg)
+  
   print("Code Checks:", trigger_code_checks, triggerred_code_checks)
   if trigger_code_checks and not triggerred_code_checks:
     if not dryRunOrig: issue.create_comment(TRIGERING_CODE_CHECK_MSG)
     else: print("Dryrun:",TRIGERING_CODE_CHECK_MSG)
     create_properties_file_tests(repository, prId, "", "", dryRunOrig, abort=False, req_type="codechecks")
 
-  if commentMsg and not dryRun:
-    issue.create_comment(commentMsg)
 
   # Check if it needs to be automatically merged.
   if all(["fully-signed" in labels,
