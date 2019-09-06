@@ -785,7 +785,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
   dryRunOrig = dryRun
   if pre_checks and ((not already_seen) or pull_request_updated):
     for cat in ["code-checks"]:
-      if (cat in signatures) and (signatures[cat]!="approved"):
+      if (cat in signatures) and (signatures[cat]=="rejected"):
         dryRun=True
         break
 
