@@ -4,8 +4,10 @@
 #ghuser:
 #  - subsystem1/
 #  - subsystem/package1
-#ghuser:
+#ghteam:
 #  - subsystem2/package1
 #  - subsystem2/package2
+#LArSoft/Core:
+#  - larpandora
 group1:
   - larpandora
