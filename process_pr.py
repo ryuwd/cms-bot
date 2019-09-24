@@ -59,6 +59,24 @@ REGEX_TEST_REG_NEW = re.compile(TEST_REGEXP_NEW, re.I)
 REGEX_TEST_ABORT = re.compile("^\s*((@|)cmsbuild\s*[,]*\s+|)(please\s*[,]*\s+|)abort(\s+test|)$", re.I)
 TEST_WAIT_GAP=720
 
+
+LAR_PR_PATTERN=format('(LArSoft/+(%(extrapos)s)#[0-9]+|(%(extrapos)s)#[0-9]+|#[0-9]+|https://github.com/+LArSoft/+(%(extrapos)s)/+pull/+[0-9]+)',
+                      extrapos='|'.join(EXTERNAL_REPOS))
+TEST_REGEXP_LAR = format("^\s*(please\s*[,]*\s+|)test(\s+with\s+(%(lar_pr)s(\s*,\s*%(lar_pr)s)*)|)\s*$",
+                     lar_pr=LAR_PR_PATTERN)
+
+
+REGEX_TEST_REG_LAR = re.compile(TEST_REGEXP_LAR, re.I)
+REGEX_TEST_PRP = re.compile(LAR_PR_PATTERN, re.I)
+
+TEST_PR_STRING=r'test with LArSoft/larana#2, LArSoft/larcore#2, LArSoft/larcorealg#2, LArSoft/larcoreobj#2, LArSoft/lardata#2, LArSoft/lardataalg#2, LArsoft/lardataobj#2,  LArsoft/larevt#2,  LArsoft/lareventdisplay#2'
+
+assert(REGEX_TEST_REG_LAR.match(r' test with #1, larg4#2, larsoft/larana#3, https://github.com/LArSoft/larcore/pull/2'))
+
+assert(REGEX_TEST_REG_LAR.match(TEST_PR_STRING))
+
+
+
 def get_last_commit(pr):
   last_commit = None
   try:
@@ -86,7 +104,7 @@ def read_repo_file(repo_config, repo_file, default=None):
 #
 # creates a properties file to trigger the test of the pull request
 #
-def create_properties_file_tests(repository, pr_number, cmsdist_pr, cmssw_prs, dryRun, abort=False, req_type="tests", repo_config=None, extra_prop=None , new_tests=False):
+def create_properties_file_tests(repository, pr_number, cmsdist_pr, cmssw_prs, dryRun, abort=False, req_type="tests", repo_config=None, extra_prop=None , new_tests=True):
   if abort: req_type = "abort"
   repo_parts = repository.split("/")
   if (req_type in "tests"):
@@ -252,6 +270,23 @@ def check_test_cmd_new(first_line, repo):
     return (True, "", ','.join(prs), wfs, cmssw_que)
   return (False, "", "", "", "")
 
+def check_test_cmd_lar(first_line, repo):
+  m = REGEX_TEST_REG_NEW.match(first_line)
+  if m:
+    wfs = ""
+    prs= []
+    cmssw_que = ""
+    print(m.groups())
+    if m.group(6): wfs = ",".join(set(m.group(6).replace(" ","").split(",")))
+    if m.group(11):
+      for pr in [x.strip().split('/github.com/',1)[-1].replace('/pull/','#').strip('/') for x in m.group(11).split(",")]:
+        while '//' in pr: pr = pr.repalce('//','/')
+        if pr.startswith('#'): pr = repo+pr
+        prs.append(pr)
+    return (True, "", ','.join(prs), wfs, cmssw_que)
+  return (False, "", "", "", "")
+
+
 def get_changed_files(repo, pr, use_gh_patch=False):
   if (not use_gh_patch) and (pr.changed_files<=300): return [f.filename for f in pr.get_files()]
   cmd="curl -s -L https://patch-diff.githubusercontent.com/raw/%s/pull/%s.patch | grep '^diff --git ' | sed 's|.* a/||;s|  *b/.*||' | sort | uniq" % (repo.full_name,pr.number)
@@ -287,7 +322,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
   prId = issue.number
   repository = repo.full_name
   repo_org, repo_name = repository.split("/",1)
-  new_tests = False
+  new_tests = True
   if 'CMS_BOT_MULTI_PR_TESTS' in environ: new_tests = True
   print("New Tests:", new_tests)
   if not cmsbuild_user: cmsbuild_user=repo_config.CMSBUILD_USER
@@ -664,7 +699,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
       # Check if the someone asked to trigger the tests
       if valid_commenter:
         test_cmd_func = check_test_cmd
-        if new_tests: test_cmd_func = check_test_cmd_new
+        if new_tests: test_cmd_func = check_test_cmd_lar
         ok, v1, v2, v3, v4 = test_cmd_func(first_line, repository)
         if ok:
           cmsdist_pr = v1
