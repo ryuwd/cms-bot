@@ -80,19 +80,20 @@ LARSOFT_REPOS =  ["larana",
                   ]
 LAR_PR_PATTERN=format('(LArSoft/+(%(repos)s)#[0-9]+|(%(repos)s)#[0-9]+|#[0-9]+|https://github.com/+[a-zA-Z0-9_-]+/+(%(repos)s)/+pull/+[0-9]+)',
                       repos='|'.join(LARSOFT_REPOS))
-TEST_REGEXP_LAR = format("^\s*((@|)FNALbuild\s*[,]*\s+|)(please\s*[,]*\s+|)test(\s+with\s+(%(lar_pr)s(\s*,\s*%(lar_pr)s)*)|)\s*$",
-                     lar_pr=LAR_PR_PATTERN)
+TEST_REGEXP_LAR = format("^\s*((@|)FNALbuild\s*[,]*\s+|)(please\s*[,]*\s+|)trigger\s+build(\s+with\s+(%(lar_pr)s(\s*,\s*%(lar_pr)s)*)|)(\s+using\+branchname\s+([a-zA-Z0-9_-]+/?[a-zA-Z0-9_-]*)\s+in\s+repos\s+(%(larrepos)s)((\s*,\*(%(larrepos)s))*|)|)\s*$",
+                     lar_pr=LAR_PR_PATTERN, larrepos='|'.join(LARSOFT_REPOS))
 
 
 REGEX_TEST_REG_LAR = re.compile(TEST_REGEXP_LAR, re.I)
 REGEX_TEST_PRP = re.compile(LAR_PR_PATTERN, re.I)
 
-TEST_PR_STRING=r'test with LArSoft/larana#2, LArSoft/larcore#2, LArSoft/larcorealg#2, LArSoft/larcoreobj#2, LArSoft/lardata#2, LArSoft/lardataalg#2, LArsoft/lardataobj#2,  LArsoft/larevt#2,  LArsoft/lareventdisplay#2'
+TEST_PR_STRING=r'trigger build with LArSoft/larana#2, LArSoft/larcore#2, LArSoft/larcorealg#2, LArSoft/larcoreobj#2, LArSoft/lardata#2, LArSoft/lardataalg#2, LArsoft/lardataobj#2,  LArsoft/larevt#2,  LArsoft/lareventdisplay#2'
 
-assert(REGEX_TEST_REG_LAR.match(r' test with #1, larg4#2, larsoft/larana#3, https://github.com/LArSoft/larcore/pull/2'))
+assert(REGEX_TEST_REG_LAR.match(r' trigger build with #1, larg4#2, larsoft/larana#3, https://github.com/LArSoft/larcore/pull/2'))
 
 assert(REGEX_TEST_REG_LAR.match(TEST_PR_STRING))
 
+#assert(REGEX_TEST_REG_LAR.match(r'trigger build using branchname feature/patch-1_1 in repos larsoft'))
 
 
 def get_last_commit(pr):
@@ -295,12 +296,12 @@ def check_test_cmd_lar(first_line, repo):
     prs= []
     cmssw_que = ""
 
-    if m.group(4):
-      for pr in [x.strip().split('/github.com/',1)[-1].replace('/pull/','#').strip('/') for x in m.group(4).split(",")]:
+    if m.group(5):
+      for pr in [x.strip().split('/github.com/',1)[-1].replace('/pull/','#').strip('/') for x in m.group(5).split(",")]:
         while '//' in pr: pr = pr.repalce('//','/')
         if pr.startswith('#'): pr = repo+pr
         prs.append(pr)
-    return (True, "CI", ','.join(prs), "", "")
+    return (True, "", ','.join(prs), "", "")
   return (False, "", "", "", "")
 
 
@@ -446,7 +447,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
       if not has_category:
         new_package_message = "\nThe following packages do not have a category, yet:\n\n"
         new_package_message += "\n".join([package for package in packages if not package in all_packages]) + "\n"
-        new_package_message += "Please create a PR for https://github.com/LArSoft/github-bot/blob/master/categories_map.py to assign category\n"
+        new_package_message += "Please create a PR for https://github.com/LArSoft/cms-bot/blob/master/categories_map.py to assign category\n"
         print(new_package_message)
         signing_categories.add("new-package")
 
@@ -973,7 +974,8 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         if '#' not in p: p='%s/cmsdist#%s' % (repo_org, p)
         prs.append(p)
       for p in [x for x in cmssw_prs.replace(' ','').split(',') if x]:
-        if '#' not in p: p='%s/cmssw#%s' % (repo_org, p)
+        if '#' not in p: p='%s/larsoft#%s' % (repo_org, p)
+        if repo_org not in p: p='%s/%s' % (repo_org,p)
         prs.append(p)
       for xpr in prs:
         repo_name,pr_num = xpr.split('#',1)

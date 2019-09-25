@@ -14,7 +14,24 @@ EXTERNAL_CATEGORIES = [ "externals" ]
 EXTERNAL_REPOS = [ ]
 
 CMSSW_REPOS = [ gh_user+"/"+gh_repo ]
-CMSDIST_REPOS = [ ]
+CMSDIST_REPOS = [
+                  "larana",
+                  "larcore",
+                  "larcorealg",
+                  "larcoreobj",
+                  "lardata",
+                  "lardataalg",
+                  "lardataobj",
+                  "larexamples",
+                  "lareventdisplay",
+                  "larg4",
+                  "larpandora",
+                  "larsim",
+                  "larreco",
+                  "larwirecell",
+                  "larsoft",
+                  "larsoftobj",
+                 ]
 CMSSW_ISSUES_TRACKERS = list(set(CMSSW_L1))
 COMPARISON_MISSING_MAP = []
 
