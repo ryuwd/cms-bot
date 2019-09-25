@@ -80,16 +80,16 @@ LARSOFT_REPOS =  ["larana",
                   ]
 LAR_PR_PATTERN=format('(LArSoft/+(%(repos)s)#[0-9]+|(%(repos)s)#[0-9]+|#[0-9]+|https://github.com/+[a-zA-Z0-9_-]+/+(%(repos)s)/+pull/+[0-9]+)',
                       repos='|'.join(LARSOFT_REPOS))
-TEST_REGEXP_LAR = format("^\s*((@|)FNALbuild\s*[,]*\s+|)(please\s*[,]*\s+|)trigger\s+build(\s+with\s+(%(lar_pr)s(\s*,\s*%(lar_pr)s)*)|)(\s+using\+branchname\s+([a-zA-Z0-9_-]+/?[a-zA-Z0-9_-]*)\s+in\s+repos\s+(%(larrepos)s)((\s*,\*(%(larrepos)s))*|)|)\s*$",
+TEST_REGEXP_LAR = format("^\s*((@|)FNALbuild\s*[,]*\s+|)(please\s*[,]*\s+|)trigger\s+build(\s+with\s+pull\s+requests\s+(%(lar_pr)s(\s*,\s*%(lar_pr)s)*)|)(\s+using\+branchname\s+([a-zA-Z0-9_-]+/?[a-zA-Z0-9_-]*)\s+in\s+repos\s+(%(larrepos)s)((\s*,\*(%(larrepos)s))*|)|)\s*$",
                      lar_pr=LAR_PR_PATTERN, larrepos='|'.join(LARSOFT_REPOS))
 
 
 REGEX_TEST_REG_LAR = re.compile(TEST_REGEXP_LAR, re.I)
 REGEX_TEST_PRP = re.compile(LAR_PR_PATTERN, re.I)
 
-TEST_PR_STRING=r'trigger build with LArSoft/larana#2, LArSoft/larcore#2, LArSoft/larcorealg#2, LArSoft/larcoreobj#2, LArSoft/lardata#2, LArSoft/lardataalg#2, LArsoft/lardataobj#2,  LArsoft/larevt#2,  LArsoft/lareventdisplay#2'
+TEST_PR_STRING=r'trigger build with pull requests LArSoft/larana#2, LArSoft/larcore#2, LArSoft/larcorealg#2, LArSoft/larcoreobj#2, LArSoft/lardata#2, LArSoft/lardataalg#2, LArsoft/lardataobj#2,  LArsoft/larevt#2,  LArsoft/lareventdisplay#2'
 
-assert(REGEX_TEST_REG_LAR.match(r' trigger build with #1, larg4#2, larsoft/larana#3, https://github.com/LArSoft/larcore/pull/2'))
+assert(REGEX_TEST_REG_LAR.match(r' trigger build with pull requests #1, larg4#2, larsoft/larana#3, https://github.com/LArSoft/larcore/pull/2'))
 
 assert(REGEX_TEST_REG_LAR.match(TEST_PR_STRING))
 
