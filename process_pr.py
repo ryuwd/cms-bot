@@ -60,9 +60,27 @@ REGEX_TEST_ABORT = re.compile("^\s*((@|)cmsbuild\s*[,]*\s+|)(please\s*[,]*\s+|)a
 TEST_WAIT_GAP=720
 
 
-LAR_PR_PATTERN=format('(LArSoft/+(%(extrapos)s)#[0-9]+|(%(extrapos)s)#[0-9]+|#[0-9]+|https://github.com/+LArSoft/+(%(extrapos)s)/+pull/+[0-9]+)',
-                      extrapos='|'.join(EXTERNAL_REPOS))
-TEST_REGEXP_LAR = format("^\s*(please\s*[,]*\s+|)test(\s+with\s+(%(lar_pr)s(\s*,\s*%(lar_pr)s)*)|)\s*$",
+LARSOFT_REPOS =  ["larana",
+                  "larcore",
+                  "larcorealg",
+                  "larcoreobj",
+                  "lardata",
+                  "lardataalg",
+                  "lardataobj",
+                  "larevt",
+                  "larexamples",
+                  "lareventdisplay",
+                  "larg4",
+                  "larpandora",
+                  "larsim",
+                  "larreco",
+                  "larwirecell",
+                  "larsoft",
+                  "larsoftobj",
+                  ]
+LAR_PR_PATTERN=format('(LArSoft/+(%(repos)s)#[0-9]+|(%(repos)s)#[0-9]+|#[0-9]+|https://github.com/+[a-zA-Z0-9_-]+/+(%(repos)s)/+pull/+[0-9]+)',
+                      repos='|'.join(LARSOFT_REPOS))
+TEST_REGEXP_LAR = format("^\s*((@|)FNALbuild\s*[,]*\s+|)(please\s*[,]*\s+|)test(\s+with\s+(%(lar_pr)s(\s*,\s*%(lar_pr)s)*)|)\s*$",
                      lar_pr=LAR_PR_PATTERN)
 
 
@@ -271,19 +289,18 @@ def check_test_cmd_new(first_line, repo):
   return (False, "", "", "", "")
 
 def check_test_cmd_lar(first_line, repo):
-  m = REGEX_TEST_REG_NEW.match(first_line)
+  m = REGEX_TEST_REG_LAR.match(first_line)
   if m:
     wfs = ""
     prs= []
     cmssw_que = ""
-    print(m.groups())
-    if m.group(6): wfs = ",".join(set(m.group(6).replace(" ","").split(",")))
-    if m.group(11):
-      for pr in [x.strip().split('/github.com/',1)[-1].replace('/pull/','#').strip('/') for x in m.group(11).split(",")]:
+
+    if m.group(4):
+      for pr in [x.strip().split('/github.com/',1)[-1].replace('/pull/','#').strip('/') for x in m.group(4).split(",")]:
         while '//' in pr: pr = pr.repalce('//','/')
         if pr.startswith('#'): pr = repo+pr
         prs.append(pr)
-    return (True, "", ','.join(prs), wfs, cmssw_que)
+    return (True, "CI", ','.join(prs), "", "")
   return (False, "", "", "", "")
 
 
