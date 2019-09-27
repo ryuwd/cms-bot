@@ -15,22 +15,22 @@ EXTERNAL_REPOS = [ ]
 
 CMSSW_REPOS = [ gh_user+"/"+gh_repo ]
 CMSDIST_REPOS = [
-                  "larana",
-                  "larcore",
-                  "larcorealg",
-                  "larcoreobj",
-                  "lardata",
-                  "lardataalg",
-                  "lardataobj",
-                  "larexamples",
-                  "lareventdisplay",
-                  "larg4",
-                  "larpandora",
-                  "larsim",
-                  "larreco",
-                  "larwirecell",
-                  "larsoft",
-                  "larsoftobj",
+                  "LArSoft/larana",
+                  "LArSoft/larcore",
+                  "LArSoft/larcorealg",
+                  "LArSoft/larcoreobj",
+                  "LArSoft/lardata",
+                  "LArSoft/lardataalg",
+                  "LArSoft/lardataobj",
+                  "LArSoft/larexamples",
+                  "LArSoft/lareventdisplay",
+                  "LArSoft/larg4",
+                  "LArSoft/larpandora",
+                  "LArSoft/larsim",
+                  "LArSoft/larreco",
+                  "LArSoft/larwirecell",
+                  "LArSoft/larsoft",
+                  "LArSoft/larsoftobj",
                  ]
 CMSSW_ISSUES_TRACKERS = list(set(CMSSW_L1))
 COMPARISON_MISSING_MAP = []

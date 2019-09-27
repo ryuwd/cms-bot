@@ -12,22 +12,22 @@ PR_HOLD_MANAGERS = [ ]
 COMMON_CATEGORIES = [ "tests", "code-checks" ]
 EXTERNAL_CATEGORIES = [ "externals" ]
 EXTERNAL_REPOS = [
-                  "larana",
-                  "larcore",
-                  "larcorealg",
-                  "lardata",
-                  "lardataalg",
-                  "lardataobj",
-                  "larevt",
-                  "larexamples",
-                  "lareventdisplay",
-                  "larg4",
-                  "larpandora",
-                  "larsim",
-                  "larreco",
-                  "larwirecell",
-                  "larsoft",
-                  "larsoftobj",
+                  "LArSoft/larana",
+                  "LArSoft/larcore",
+                  "LArSoft/larcorealg",
+                  "LArSoft/lardata",
+                  "LArSoft/lardataalg",
+                  "LArSoft/lardataobj",
+                  "LArSoft/larevt",
+                  "LArSoft/larexamples",
+                  "LArSoft/lareventdisplay",
+                  "LArSoft/larg4",
+                  "LArSoft/larpandora",
+                  "LArSoft/larsim",
+                  "LArSoft/larreco",
+                  "LArSoft/larwirecell",
+                  "LArSoft/larsoft",
+                  "LArSoft/larsoftobj",
                  ]
 
 CMSSW_REPOS = [ gh_user+"/"+gh_repo ]
