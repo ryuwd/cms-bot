@@ -13,6 +13,8 @@ from os import environ
 from github_utils import get_token, edit_pr, api_rate_limits
 from socket import setdefaulttimeout
 from _py2with3compatibility import run_cmd
+from github import Github
+
 
 try: from categories import COMMENT_CONVERSION
 except: COMMENT_CONVERSION={}
@@ -101,7 +103,6 @@ TEST_REGEXP_LAR_BR = format("^\s*((@|)FNALbuild\s*[,]*\s+|)(please\s*[,]*\s+|)tr
 REGEX_TEST_REG_LAR_BR = re.compile(TEST_REGEXP_LAR_BR, re.I)
 m=REGEX_TEST_REG_LAR_BR.match('trigger build using branchname gartung-patch-1 in repos  larana, larcore, larcorealg, larcoreobj, lardata, lardataalg, lardataobj, larevt, lareventdisplay, larexamples, larg4, larpandora, larsim, larreco, larwirecell')
 assert(m)
-#print(m.groups())
 
 assert(REGEX_TEST_REG_LAR_BR.match(r'trigger build'))
 assert(REGEX_TEST_REG_LAR_BR.match(r'please trigger build'))
@@ -158,7 +159,7 @@ def create_properties_file_tests(repository, pr_number, cmsdist_pr, cmssw_prs, d
     for pr in [p for p in cmssw_prs.split(',') if p]:
       if '#' not in pr: pr='%s#%s' % (repository, pr)
       prs.append(pr)
-    parameters['PULL_REQUESTS']=" ".join(prs)
+    parameters['PULL_REQUESTS']=",".join(prs)
     parameters['USE_MULTIPLE_PRS_JOB']='true'
   else:
     parameters['PUB_USER']=repo_parts[0]
@@ -312,20 +313,31 @@ def check_test_cmd_lar(first_line, repo):
 
     if m.group(5):
       for pr in [x.strip().split('/github.com/',1)[-1].replace('/pull/','#').strip('/') for x in m.group(5).split(",")]:
-        while '//' in pr: pr = pr.repalce('//','/')
+        while '//' in pr: pr = pr.replace('//','/')
         if pr.startswith('#'): pr = repo+pr
         prs.append(pr)
     return (True, "", ','.join(prs), wfs, cmssw_queue)
 
   m = REGEX_TEST_REG_LAR_BR.match(first_line)
   if m:
+    gh = Github(login_or_token=environ['GITHUBTOKEN'])
     branches=m.group(5).replace(' ','').split(',')
     repos=m.group(10).replace(' ','').split(',')
-    print(branches)
-    print(repos)
     wfs = ""
     prs= []
     cmssw_que = ""
+
+    for repo in repos:
+        fullreponame=repo
+        if not repo.startswith('LArsoft/'):
+            fullreponame='LArSoft/'+repo
+        ghrepo = gh.get_repo(fullreponame)
+        for branch in branches:
+            pulls = ghrepo.get_pulls(state='open', head=branch)
+            print('pull requests with head=%s in repo %s'%(branch,fullreponame))
+            for pull in pulls:
+                prs.append('%s#%s'%(fullreponame,pull.number))
+
     return (True, "", ','.join(prs), "", "")
 
   return (False, "", "", "", "")
