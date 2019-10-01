@@ -324,7 +324,7 @@ def check_test_cmd_lar(first_line, repo):
     branches=m.group(5).replace(' ','').split(',')
     repos=m.group(10).replace(' ','').split(',')
     wfs = ""
-    prs= []
+    prs= set()
     cmssw_que = ""
 
     for repo in repos:
@@ -336,9 +336,9 @@ def check_test_cmd_lar(first_line, repo):
             pulls = ghrepo.get_pulls(state='open', head=branch)
             print('pull requests with head=%s in repo %s'%(branch,fullreponame))
             for pull in pulls:
-                prs.append('%s#%s'%(fullreponame,pull.number))
+                prs.add('%s#%s'%(fullreponame,pull.number))
 
-    return (True, "", ','.join(prs), "", "")
+    return (True, "", ','.join(sorted(list(prs))), "", "")
 
   return (False, "", "", "", "")
 
