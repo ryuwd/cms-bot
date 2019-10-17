@@ -3,7 +3,7 @@ from repo_config import GH_REPO_ORGANIZATION as gh_user
 from repo_config import CMSBUILD_USER
 from categories_map import CMSSW_CATEGORIES
 
-CMSSW_L1 = ['gartung']
+CMSSW_L1 = ['gartung', 'lgarren']
 APPROVE_BUILD_RELEASE =  list(set([  ] + CMSSW_L1))
 REQUEST_BUILD_RELEASE = APPROVE_BUILD_RELEASE
 TRIGGER_PR_TESTS = list(set([] + REQUEST_BUILD_RELEASE))
@@ -40,6 +40,10 @@ COMPARISON_MISSING_MAP = []
 CMSSW_L2 = {
   CMSBUILD_USER : ["tests", "code-checks" ],
   'gartung': [gh_repo],
+  'lgarren': [gh_repo],
+  'erica-snider': [gh_repo],
+  'knoepfel': [gh_repo],
+  'chissg': [gh_repo],
 }
 
 USERS_TO_TRIGGER_HOOKS = set(TRIGGER_PR_TESTS + CMSSW_ISSUES_TRACKERS + list(CMSSW_L2.keys()))
