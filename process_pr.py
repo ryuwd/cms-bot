@@ -309,7 +309,7 @@ def check_test_cmd_lar(first_line, repo):
   if m:
     wfs = ""
     prs= []
-    cmssw_que = ""
+    cmssw_queue = ""
 
     if m.group(5):
       for pr in [x.strip().split('/github.com/',1)[-1].replace('/pull/','#').strip('/') for x in m.group(5).split(",")]:
