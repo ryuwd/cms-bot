@@ -1077,7 +1077,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
 
   if ("fully-signed" in labels) and (not "fully-signed" in old_labels):
     messageFullySigned = format("This pull request is fully signed and it will be"
-                              " integrated in one of the next %(branch)s IBs"
+                              " merged to %(branch)s and built in the next LArSoft release"
                               "%(requiresTest)s"
                               "%(devReleaseRelVal)s."
                               " %(autoMerge)s",
