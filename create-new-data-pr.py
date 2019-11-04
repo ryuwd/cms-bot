@@ -43,10 +43,14 @@ if __name__ == "__main__":
       last_release_tag = (i.tag_name)
       break
 
-  comparison = data_repo.compare('master', last_release_tag)
-  print('commits behind ', comparison.behind_by)
-  create_new_tag = True if comparison.behind_by > 0 else False # last tag and master commit difference
-  print('create new tag ? ', create_new_tag)
+  if last_release_tag:
+    comparison = data_repo.compare('master', last_release_tag)
+    print('commits behind ', comparison.behind_by)
+    create_new_tag = True if comparison.behind_by > 0 else False # last tag and master commit difference
+    print('create new tag ? ', create_new_tag)
+  else:
+    create_new_tag = True
+    last_release_tag = "V00-00-00"
 
   # if created files and modified files are the same count, all files are new
 
@@ -95,7 +99,7 @@ if __name__ == "__main__":
       print('Branch exists')
 
   # file with tags on the default branch
-  cmsswdatafile = "data/cmsswdata.txt"
+  cmsswdatafile = "/data/cmsswdata.txt"
   content_file = dist_repo.get_contents(cmsswdatafile, repo_tag_pr_branch)
   cmsswdatafile_raw = content_file.decoded_content
   new_content = ''
@@ -117,7 +121,29 @@ if __name__ == "__main__":
       new_content = new_content+updated_line
 
   mssg = 'Update tag for '+repo_name_only+' to '+new_tag
-  update_file_object = dist_repo.update_file("/data/cmsswdata.txt", mssg, new_content, content_file.sha, repo_tag_pr_branch)
+  update_file_object = dist_repo.update_file(cmsswdatafile, mssg, new_content, content_file.sha, repo_tag_pr_branch)
+
+  # file with tags on the default branch
+  cmsswdataspec = "/cmsswdata.spec"
+  content_file = dist_repo.get_contents(cmsswdataspec, repo_tag_pr_branch)
+  cmsswdatafile_raw = content_file.decoded_content
+  new_content = []
+  data_pkg = ' data-'+repo_name_only
+  added_pkg = False 
+  for line in cmsswdatafile_raw.splitlines():
+      new_content.append(line)
+      if not line.startswith('Requires: '): continue
+      if data_pkg in line:
+        added_pkg = False
+        break
+      if not added_pkg:
+        added_pkg = True
+        new_content.append('Requires:'+data_pkg)
+
+  if added_pkg:
+    mssg = 'Update cmssdata spec for'+data_pkg
+    update_file_object = dist_repo.update_file(cmsswdataspec, mssg, '\n'.join(new_content), content_file.sha, repo_tag_pr_branch)
+
   title = 'Update tag for '+repo_name_only+' to '+new_tag
   body = 'Move '+repo_name_only+" data to new tag, see \n" + data_repo_pr.html_url + '\n'
   change_tag_pull_request = dist_repo.create_pull(title=title, body=body, base=default_cms_dist_branch, head=repo_tag_pr_branch)

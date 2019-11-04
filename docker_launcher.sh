@@ -11,11 +11,14 @@ if [ "X$NOT_RUN_DOCKER" != "X" -a "X$DOCKER_IMG" != "X"  ] ; then
 fi
 if [ "X$DOCKER_IMG" != X -a "X$RUN_NATIVE" = "X" ]; then
   if [ "X$WORKSPACE" = "X" ] ; then export WORKSPACE=$(/bin/pwd) ; fi
-  BUILD_BASEDIR=$(echo $WORKSPACE |  cut -d/ -f1-3)
+  BUILD_BASEDIR=$(dirname $WORKSPACE)
   export KRB5CCNAME=$(klist | grep 'Ticket cache: FILE:' | sed 's|.* ||')
   MOUNT_POINTS="/cvmfs,/tmp"
   for xdir in /cvmfs/grid.cern.ch/etc/grid-security/vomses:/etc/vomses /cvmfs/grid.cern.ch/etc/grid-security:/etc/grid-security ; do
     ldir=$(echo $xdir | sed 's|.*:||')
+    if [ $(echo "${IGNORE_MOUNTS}" | tr ' ' '\n' | grep "^${ldir}$" | wc -l) -gt 0 ] ; then
+      continue
+    fi
     if [ -d $ldir -a $(ls $ldir |wc -l) -gt 0 ] ; then xdir=$ldir; fi
     MOUNT_POINTS="$MOUNT_POINTS,${xdir}"
   done
@@ -59,18 +62,21 @@ if [ "X$DOCKER_IMG" != X -a "X$RUN_NATIVE" = "X" ]; then
   else
     ws=$(echo $WORKSPACE |  cut -d/ -f1-2)
     CLEAN_UP_CACHE=false
+    DOCKER_IMGX=""
     if [ -e /cvmfs/unpacked.cern.ch/registry.hub.docker.com/$DOCKER_IMG ] ; then
-      DOCKER_IMG=/cvmfs/unpacked.cern.ch/registry.hub.docker.com/$DOCKER_IMG
+      DOCKER_IMGX=/cvmfs/unpacked.cern.ch/registry.hub.docker.com/$DOCKER_IMG
     elif [ -e /cvmfs/cms-ib.cern.ch/docker/$DOCKER_IMG ] ; then
-      DOCKER_IMG=/cvmfs/cms-ib.cern.ch/docker/$DOCKER_IMG
-    else
-      DOCKER_IMG="docker://$DOCKER_IMG"
+      DOCKER_IMGX=/cvmfs/cms-ib.cern.ch/docker/$DOCKER_IMG
+    fi
+    if [ "$DOCKER_IMGX" = "" ] ; then
+      DOCKER_IMGX="docker://$DOCKER_IMG"
       if test -w ${BUILD_BASEDIR} ; then
-        export SINGULARITY_CACHEDIR="${BUILD_BASEDIR}/singularity"
+        export SINGULARITY_CACHEDIR="${BUILD_BASEDIR}/.singularity"
       else
         CLEAN_UP_CACHE=true
-        export SINGULARITY_CACHEDIR="${WORKSPACE}/singularity"
+        export SINGULARITY_CACHEDIR="${WORKSPACE}/.singularity"
       fi
+      mkdir -p $SINGULARITY_CACHEDIR
     fi
     if [ "X$TEST_CONTEXT" = "XGPU" -o -e "/proc/driver/nvidia/version" ] ; then
       if [ $(echo "${SINGULARITY_OPTIONS}" | tr ' ' '\n' | grep '^\-\-nv$' | wc -l) -eq 0 ] ; then
@@ -82,7 +88,7 @@ if [ "X$DOCKER_IMG" != X -a "X$RUN_NATIVE" = "X" ]; then
       SINGULARITY_OPTIONS="${SINGULARITY_OPTIONS} -B $HOME:/home/cmsbuild"
     fi
     ERR=0
-    singularity exec $SINGULARITY_OPTIONS $DOCKER_IMG sh -c "source /cvmfs/cms.cern.ch/cmsset_default.sh ; $CMD2RUN" || ERR=$?
+    singularity exec $SINGULARITY_OPTIONS $DOCKER_IMGX sh -c "source /cvmfs/cms.cern.ch/cmsset_default.sh ; $CMD2RUN" || ERR=$?
     if $CLEAN_UP_CACHE ; then rm -rf $SINGULARITY_CACHEDIR ; fi
     exit $ERR
   fi

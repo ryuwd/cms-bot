@@ -27,6 +27,8 @@ CONFIG_MAP=$CMS_BOT_DIR/config.map
 source ${PR_TESTING_DIR}/_helper_functions.sh   # general helper functions
 source ${CMS_BOT_DIR}/jenkins-artifacts
 source ${COMMON}/github_reports.sh
+NCPU=$(${COMMON}/get_cpu_number.sh)
+let NCPU2=${NCPU}*2
 
 function prepare_upload_results (){
     cd $WORKSPACE
@@ -166,8 +168,11 @@ COMPARISON_REL=
 if [[ $RELEASE_FORMAT != *-* ]]; then
     COMP_ARCH=$COMPARISON_ARCH
     if [ "X$COMP_ARCH" = "X" ] ; then
-      COMP_ARCH=$(cat $CONFIG_MAP | grep $COMP_QUEUE | grep -v "DISABLED=1" | grep "PROD_ARCH=1" | cut -d ";" -f 1 | cut -d "=" -f 2)
-      if [ "X$COMP_ARCH" = "X" ] ; then COMP_ARCH=$ARCHITECTURE ; fi
+      COMP_ARCH=$(cat $CONFIG_MAP | grep "=$COMP_QUEUE;" | grep -v "DISABLED=1" | grep "SCRAM_ARCH=${ARCHITECTURE};" | grep "ADDITIONAL_TESTS=.*baseline" | sed 's|^.*SCRAM_ARCH=||;s|;.*$||')
+      if [ "X$COMP_ARCH" = "X" ] ; then
+        COMP_ARCH=$(cat $CONFIG_MAP | grep $COMP_QUEUE | grep -v "DISABLED=1" | grep "ADDITIONAL_TESTS=.*baseline" | sed 's|^.*SCRAM_ARCH=||;s|;.*$||')
+        if [ "X$COMP_ARCH" = "X" ] ; then COMP_ARCH=$ARCHITECTURE ; fi
+      fi
     fi
     for SCRAM_REL in $(scram -a $SCRAM_ARCH l -c $RELEASE_FORMAT | grep -v -f "$CMS_BOT_DIR/ignore-releases-for-tests" |  awk '{print $2":"$3}' | sort -r | sed 's|:.*$||') ;  do
       if [ "$(echo $SCRAM_REL | sed 's|_X_.*|_X|')" = "$COMP_QUEUE" ] ; then
@@ -313,8 +318,8 @@ if ${BUILD_EXTERNAL} ; then
     fi
 
     # Build the whole cmssw-tool-conf toolchain
-    COMPILATION_CMD="pkgtools/cmsBuild --builders 3 -i $WORKSPACE/$BUILD_DIR $REF_REPO --repository $CMS_WEEKLY_REPO \
-        $SOURCE_FLAG --arch $ARCHITECTURE -j $(${COMMON}/get_cpu_number.sh) build cms-common cms-git-tools cmssw-tool-conf"
+    COMPILATION_CMD="PYTHONPATH= ./pkgtools/cmsBuild --force-tag --tag ${REPORT_H_CODE} --builders 3 -i $WORKSPACE/$BUILD_DIR $REF_REPO --repository $CMS_WEEKLY_REPO \
+        $SOURCE_FLAG --arch $ARCHITECTURE -j ${NCPU} build cms-common cms-git-tools cmssw-tool-conf"
     echo $COMPILATION_CMD > ${WORKSPACE}/cmsswtoolconf.log  # log the command to be run
     # run the command and both log it to file and display it
     (eval $COMPILATION_CMD && echo 'ALL_OK') 2>&1 | tee -a $WORKSPACE/cmsswtoolconf.log
@@ -349,6 +354,12 @@ if ${BUILD_EXTERNAL} ; then
     mv $CMSSW_IB/config/SCRAM $CMSSW_IB/config/SCRAM.orig
     cp -r scram-buildrules/SCRAM $CMSSW_IB/config/SCRAM
     cp -f scram-buildrules/CMSSW_BuildFile.xml $CMSSW_IB/config/BuildFile.xml
+    if [ -f $CMSSW_IB/config/SCRAM.orig/GMake/CXXModules.mk ] ; then
+      cp $WORKSPACE/cmsdist/CXXModules.mk.file $CMSSW_IB/config/SCRAM/GMake/CXXModules.mk
+      if [ "X${CLING_PREBUILT_MODULE_PATH}" = "X" ] ; then
+        export CLING_PREBUILT_MODULE_PATH="${WORKSPACE}/${CMSSW_IB}/lib/${SCRAM_ARCH}"
+      fi
+    fi
     rm -rf scram-buildrules
     cd $WORKSPACE/$CMSSW_IB/src
     touch $WORKSPACE/cmsswtoolconf.log
@@ -426,6 +437,7 @@ UNIT_TESTS_OK=true
 RELVALS_OK=true
 ADDON_OK=true
 CLANG_BUILD_OK=true
+PYTHON3_BUILD_OK=true
 RUN_TESTS=true
 USE_DAS_SORT=YES
 
@@ -530,7 +542,7 @@ if [ "X$TEST_CLANG_COMPILATION" = Xtrue -a $NEED_CLANG_TEST = true -a "X$CMSSW_P
   report_pull_request_results_all_prs_with_commit "TESTS_RUNNING" --report-pr ${REPORT_H_CODE} --pr-job-id ${BUILD_NUMBER} --add-message "Testing Clang compilation" ${NO_POST}
 
   #first, add the command to the log
-  CLANG_USER_CMD="USER_CUDA_FLAGS='--expt-relaxed-constexpr' USER_CXXFLAGS='-Wno-register -fsyntax-only' scram build -k -j $(${COMMON}/get_cpu_number.sh *2) COMPILER='llvm compile'"
+  CLANG_USER_CMD="USER_CUDA_FLAGS='--expt-relaxed-constexpr' USER_CXXFLAGS='-Wno-register -fsyntax-only' scram build -k -j ${NCPU2} COMPILER='llvm compile'"
   CLANG_CMD="scram b vclean && ${CLANG_USER_CMD} BUILD_LOG=yes"
   echo $CLANG_USER_CMD > $WORKSPACE/buildClang.log
 
@@ -597,6 +609,19 @@ if [ "X$CMSDIST_ONLY" == "Xfalse" -a "X${CODE_RULES}" = "Xtrue" ]; then # If a C
 fi
 echo "CODE_RULES;${QA_RES}" >> $RESULTS_FILE
 
+#Do Python3 checks
+if $IS_DEV_BRANCH ; then
+  PYTHON3_RES="OK"
+  CMD_python=$(which python3) scram b -r -k -j ${NCPU} CompilePython > $WORKSPACE/python3.log 2>&1 || true
+  if [ $(grep ' Error compiling ' $WORKSPACE/python3.log | wc -l) -gt 0 ] ; then
+    PYTHON3_RES="ERROR"
+    PYTHON3_BUILD_OK=false
+    RUN_TESTS=false
+    ALL_OK=false
+  fi
+  echo "PYTHON3_CHECKS;${PYTHON3_RES},Python3 Checks,See Log,python3.log" >> $RESULTS_FILE
+fi
+
 #
 # Static checks
 #
@@ -607,8 +632,8 @@ if [ "X$DO_STATIC_CHECKS" = "Xtrue" -a "$ONLY_FIREWORKS" = false -a "X$CMSSW_PR"
   pushd $WORKSPACE/$CMSSW_IB
   git cms-addpkg --ssh Utilities/StaticAnalyzers
   mkdir $WORKSPACE/llvm-analysis
-  USER_CXXFLAGS='-Wno-register' SCRAM_IGNORE_PACKAGES="Fireworks/% Utilities/StaticAnalyzers" USER_LLVM_CHECKERS="-enable-checker threadsafety -enable-checker cms -disable-checker cms.FunctionDumper" \
-    scram b -k -j $(${COMMON}/get_cpu_number.sh *2) checker SCRAM_IGNORE_SUBDIRS=test 2>&1 | tee -a $WORKSPACE/llvm-analysis/runStaticChecks.log
+  USER_CXXFLAGS='-Wno-register -DEDM_ML_DEBUG -w' SCRAM_IGNORE_PACKAGES="Fireworks/% Utilities/StaticAnalyzers" USER_LLVM_CHECKERS="-enable-checker threadsafety -enable-checker cms -disable-checker cms.FunctionDumper" \
+    scram b -k -j ${NCPU2} checker SCRAM_IGNORE_SUBDIRS=test 2>&1 | tee -a $WORKSPACE/llvm-analysis/runStaticChecks.log
   cp -R $WORKSPACE/$CMSSW_IB/llvm-analysis/*/* $WORKSPACE/llvm-analysis || true
   echo 'END OF STATIC CHECKS'
   echo '--------------------------------------'
@@ -650,35 +675,41 @@ fi
 # #############################################
 # test header checks tests
 # ############################################
-CHK_HEADER_LOG_RES="NOTRUN"
 CHK_HEADER_OK=true
-if [ "X${CHECK_HEADER_TESTS}" = "Xtrue" -a -f $WORKSPACE/$CMSSW_IB/config/SCRAM/GMake/Makefile.chk_headers ] ; then
-  report_pull_request_results_all_prs_with_commit "TESTS_RUNNING" --report-pr ${REPORT_H_CODE} --pr-job-id ${BUILD_NUMBER} --add-message "Running HeaderChecks" ${NO_POST}
-  IGNORE_HDRS="%.i"
-  if [ -e "$WORKSPACE/$RELEASE_FORMAT/src/TrackingTools/GsfTools/interface/MultiGaussianStateCombiner.h" ] ; then
-    IGNORE_HDRS="TrackingTools/GsfTools/interface/MultiGaussianStateCombiner.h %.i"
+if $IS_DEV_BRANCH ; then
+  CHK_HEADER_LOG_RES="NOTRUN"
+  if [ "X${CHECK_HEADER_TESTS}" = "Xtrue" -a -f $WORKSPACE/$CMSSW_IB/config/SCRAM/GMake/Makefile.chk_headers ] ; then
+    report_pull_request_results_all_prs_with_commit "TESTS_RUNNING" --report-pr ${REPORT_H_CODE} --pr-job-id ${BUILD_NUMBER} --add-message "Running HeaderChecks" ${NO_POST}
+    IGNORE_HDRS="%.i"
+    if [ -e "$WORKSPACE/$RELEASE_FORMAT/src/TrackingTools/GsfTools/interface/MultiGaussianStateCombiner.h" ] ; then
+      IGNORE_HDRS="TrackingTools/GsfTools/interface/MultiGaussianStateCombiner.h %.i"
+    fi
+    COMPILATION_CMD="scram b vclean && USER_CHECK_HEADERS_IGNORE='${IGNORE_HDRS}' scram build -k -j ${NCPU} check-headers"
+    echo $COMPILATION_CMD > $WORKSPACE/headers_chks.log
+    (eval $COMPILATION_CMD && echo 'ALL_OK') 2>&1 | tee -a $WORKSPACE/headers_chks.log
+    echo 'END OF HEADER CHEKS LOG'
+    TEST_ERRORS=`grep -E "^gmake: .* Error [0-9]" $WORKSPACE/headers_chks.log` || true
+    GENERAL_ERRORS=`grep "ALL_OK" $WORKSPACE/headers_chks.log` || true
+    CHK_HEADER_LOG_RES="OK"
+    CHK_HEADER_OK=true
+    if [ "X$TEST_ERRORS" != "X" -o "X$GENERAL_ERRORS" = "X" ]; then
+      CHK_HEADER_LOG_RES="ERROR"
+      CHK_HEADER_OK=false
+      ALL_OK=false
+    fi
   fi
-  COMPILATION_CMD="scram b vclean && USER_CHECK_HEADERS_IGNORE='${IGNORE_HDRS}' scram build -k -j $(${COMMON}/get_cpu_number.sh) check-headers"
-  echo $COMPILATION_CMD > $WORKSPACE/headers_chks.log
-  (eval $COMPILATION_CMD && echo 'ALL_OK') 2>&1 | tee -a $WORKSPACE/headers_chks.log
-  echo 'END OF HEADER CHEKS LOG'
-  TEST_ERRORS=`grep -E "^gmake: .* Error [0-9]" $WORKSPACE/headers_chks.log` || true
-  GENERAL_ERRORS=`grep "ALL_OK" $WORKSPACE/headers_chks.log` || true
-  CHK_HEADER_LOG_RES="OK"
-  CHK_HEADER_OK=true
-  if [ "X$TEST_ERRORS" != "X" -o "X$GENERAL_ERRORS" = "X" ]; then
-    CHK_HEADER_LOG_RES="ERROR"
-    CHK_HEADER_OK=false
-  fi
+  echo "HEADER_CHECKS;${CHK_HEADER_LOG_RES},Header Consistency,See Log,headers_chks.log" >> $RESULTS_FILE
 fi
-echo "HEADER_CHECKS;${CHK_HEADER_LOG_RES},Header Consistency,See Log,headers_chks.log" >> $RESULTS_FILE
 # #############################################
 # test compilation with GCC
 # ############################################
+if [ "X$EXTRA_CMSSW_PACKAGES" != "X" ] ; then
+  git cms-addpkg $EXTRA_CMSSW_PACKAGES || true
+fi
 report_pull_request_results_all_prs_with_commit "TESTS_RUNNING" --report-pr ${REPORT_H_CODE} --pr-job-id ${BUILD_NUMBER} --add-message "Running Compilation" ${NO_POST}
-COMPILATION_CMD="scram b vclean && BUILD_LOG=yes scram b -k -j $(${COMMON}/get_cpu_number.sh)"
+COMPILATION_CMD="scram b vclean && BUILD_LOG=yes scram b -k -j ${NCPU}"
 if [ "$BUILD_EXTERNAL" = "true" -a $(grep '^edm_checks:' $WORKSPACE/$CMSSW_IB/config/SCRAM/GMake/Makefile.rules | wc -l) -gt 0 ] ; then
-  COMPILATION_CMD="scram b vclean && BUILD_LOG=yes SCRAM_NOEDM_CHECKS=yes scram b -k -j $(${COMMON}/get_cpu_number.sh) && scram b -k -j $(${COMMON}/get_cpu_number.sh) edm_checks"
+  COMPILATION_CMD="scram b vclean && BUILD_LOG=yes SCRAM_NOEDM_CHECKS=yes scram b -k -j ${NCPU} && scram b -k -j ${NCPU} edm_checks"
 fi
 echo $COMPILATION_CMD > $WORKSPACE/build.log
 (eval $COMPILATION_CMD && echo 'ALL_OK') 2>&1 | tee -a $WORKSPACE/build.log
@@ -723,7 +754,7 @@ else
     fi
     #Check Build Rule: Make sure nothing rebuilds after last build
     if [ $(cat $WORKSPACE/$CMSSW_IB/config/config_tag  | sed 's|V||;s|-||g;s|^0*||') -gt 50807 ] ; then
-        scram build -f -j $(${COMMON}/get_cpu_number.sh) -d  >${WORKSPACE}/scram-rebuild.log 2>&1
+        scram build -f -j ${NCPU} -d  >${WORKSPACE}/scram-rebuild.log 2>&1
         grep ' newer ' ${WORKSPACE}/scram-rebuild.log | grep -v '/cache/xlibs.backup' > ${WORKSPACE}/newer-than-target.log || true
         if [ -s ${WORKSPACE}/newer-than-target.log ] ; then
             echo "SCRAM_REBUILD;ERROR,Build Rules,See Log,newer-than-target.log" >> $RESULTS_FILE
@@ -771,7 +802,7 @@ if [ "X$DO_TESTS" = Xtrue -a "X$BUILD_OK" = Xtrue -a "$RUN_TESTS" = "true" ]; th
   report_pull_request_results_all_prs_with_commit "TESTS_RUNNING" --report-pr ${REPORT_H_CODE} --pr-job-id ${BUILD_NUMBER} --add-message "Running Unit Tests" ${NO_POST}
   echo '--------------------------------------'
   UT_TIMEOUT=$(echo 7200+${CMSSW_PKG_COUNT}*20 | bc)
-  UTESTS_CMD="CMS_PATH=/cvmfs/cms-ib.cern.ch/week0 timeout ${UT_TIMEOUT} scram b -k -j $(${COMMON}/get_cpu_number.sh)  runtests "
+  UTESTS_CMD="CMS_PATH=/cvmfs/cms-ib.cern.ch/week0 timeout ${UT_TIMEOUT} scram b -k -j ${NCPU}  runtests "
   echo $UTESTS_CMD > $WORKSPACE/unitTests.log
   (eval $UTESTS_CMD && echo 'ALL_OK') > $WORKSPACE/unitTests.log 2>&1 || true
   echo 'END OF UNIT TESTS'
@@ -942,7 +973,7 @@ if [ "X$DO_ADDON_TESTS" = Xtrue -a "X$BUILD_OK" = Xtrue -a "$RUN_TESTS" = "true"
   #End of 71x data hack
   echo '--------------------------------------'
   date
-  ADDON_CMD="CMSSW_SEARCH_PATH=$EX_DATA_SEARCH CMS_PATH=/cvmfs/cms-ib.cern.ch/week0 timeout 7200 addOnTests.py -j $(${COMMON}/get_cpu_number.sh)"
+  ADDON_CMD="CMSSW_SEARCH_PATH=$EX_DATA_SEARCH CMS_PATH=/cvmfs/cms-ib.cern.ch/week0 timeout 7200 addOnTests.py -j ${NCPU}"
   echo $ADDON_CMD > $WORKSPACE/addOnTests.log
   (eval $ADDON_CMD && echo 'ALL_OK') 2>&1 | tee -a $WORKSPACE/addOnTests.log
   date
@@ -1006,9 +1037,9 @@ done
 TESTS_FAILED="Failed tests:"
 if [ "X$BUILD_OK" = Xfalse ]; then
   TESTS_FAILED="$TESTS_FAILED  Build"
-  if [ "X$CHK_HEADER_OK" = Xfalse ] ; then
-    TESTS_FAILED="$TESTS_FAILED  HeaderConsistency"
-  fi
+fi
+if [ "X$CHK_HEADER_OK" = Xfalse ] ; then
+  TESTS_FAILED="$TESTS_FAILED  HeaderConsistency"
 fi
 if [ "X$UNIT_TESTS_OK" = Xfalse ]; then
   TESTS_FAILED="$TESTS_FAILED  UnitTests"
@@ -1021,6 +1052,9 @@ if [ "X$ADDON_OK" = Xfalse ]; then
 fi
 if [ "X$CLANG_BUILD_OK" = Xfalse ]; then
   TESTS_FAILED="$TESTS_FAILED  ClangBuild"
+fi
+if [ "X$PYTHON3_BUILD_OK" = Xfalse ]; then
+  TESTS_FAILED="$TESTS_FAILED  Python3"
 fi
 
 prepare_upload_results
@@ -1061,6 +1095,9 @@ else
     fi
     if [ "X$MB_TESTS_OK" = Xfalse ]; then
         $CMS_BOT_DIR/report-pull-request-results MATERIAL_BUDGET        -f $WORKSPACE/upload/material-budget.log ${REPORT_GEN_OPTS}
+    fi
+    if [ "X$PYTHON3_BUILD_OK" = Xfalse ]; then
+        $CMS_BOT_DIR/report-pull-request-results PYTHON3_FAIL        -f $WORKSPACE/upload/python3.log ${REPORT_GEN_OPTS}
     fi
     REPORT_OPTS="REPORT_ERRORS ${REPORT_OPTS}" # Doc:
 fi

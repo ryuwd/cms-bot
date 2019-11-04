@@ -54,14 +54,17 @@ fi
 if [ -e cmsdist/data/cmsswdata.txt ] ; then
   case ${PKG_REPO} in
     cms-data/*)
-      data_tag=$(grep "^ *${PKG_NAME}=" cmsdist/data/cmsswdata.txt)
+      data_tag=$(grep "^ *${PKG_NAME}=" cmsdist/data/cmsswdata.txt || echo "${PKG_NAME}=V00-00-00")
       sed -i -e "/^ *${PKG_NAME}=.*/d;s/^ *\[default\].*/[default]\n${data_tag}/" cmsdist/data/cmsswdata.txt
+      if [ $(grep "Requires:  *data-${PKG_NAME} *$"  cmsdist/cmsswdata.spec | wc -l) -eq 0 ] ; then
+        sed -i -e "s/^%prep *$/Requires: data-${PKG_NAME}\n%prep/" cmsdist/cmsswdata.spec
+      fi
       touch cmsdist/data/data-${PKG_NAME}.file
       rm -rf cmsdist/data/data-${PKG_NAME}.* 
     ;;
   esac
 fi
-SOURCES=$(./pkgtools/cmsBuild ${CMS_REPO} -c cmsdist/ -a ${ARCHITECTURE} -i ${BUILD_DIR} -j 8 --sources build  ${SPEC_NAME} | \
+SOURCES=$(PYTHONPATH= ./pkgtools/cmsBuild ${CMS_REPO} -c cmsdist/ -a ${ARCHITECTURE} -i ${BUILD_DIR} -j 8 --sources build  ${SPEC_NAME} | \
                         grep -i "^${SPEC_NAME}:source" | grep github.com/.*/${PKG_NAME}\.git | tr '\n' '#' )
 
 N=$(echo ${SOURCES} | tr '#' '\n' | grep -ci ':source' ) || true
