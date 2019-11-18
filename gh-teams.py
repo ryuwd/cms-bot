@@ -9,8 +9,8 @@ from socket import setdefaulttimeout
 from github_utils import api_rate_limits, github_api,add_organization_member
 setdefaulttimeout(120)
 
-CMS_OWNERS = [ "gartung" ]
-CMS_SDT    = [ "gartung" ]
+CMS_OWNERS = [ "LArSoft/Core" ]
+CMS_SDT    = [ "LArSoft/Core" ]
 CMS_ORGANIZATIONS = [ "LArSoft" ]
 
 REPO_OWNERS = {}
@@ -24,7 +24,7 @@ for org in CMS_ORGANIZATIONS:
 #################################
 REPO_OWNERS["cms-data"]      += []
 REPO_OWNERS["cms-externals"] += []
-REPO_OWNERS["cms-sw"]        += [ "gartung" ]
+REPO_OWNERS["cms-sw"]        += [ "LArSoft/Core" ]
 
 #################################
 #Set Teams for organizations    #
@@ -38,8 +38,7 @@ REPO_TEAMS["cms-data"]["Developers"] =  {
 #Teams for cms-externals
 REPO_TEAMS["cms-externals"]["Developers"] = deepcopy(REPO_TEAMS["cms-data"]["Developers"])
 REPO_TEAMS["cms-externals"]["boost-developers"] = { "members": ["fwyzard"], "repositories" : { "boost" : "push" } }
-REPO_TEAMS["cms-externals"]["Developers"]["members"].append("gartung")
-REPO_TEAMS["cms-externals"]["Developers"]["members"].append("fwyzard")
+REPO_TEAMS["cms-externals"]["Developers"]["members"].append("LArSoft/Core")
 
 #Teams for cms-sw
 REPO_TEAMS["cms-sw"]["RecoLuminosity-LumiDB-admins"] = { 

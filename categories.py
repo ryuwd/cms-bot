@@ -7,11 +7,11 @@ from repo_config import CMSBUILD_USER
 
 authors = {}
 GITHUB_BLACKLIST_AUTHORS = []
-CMSSW_L1 = ['gartung']
-APPROVE_BUILD_RELEASE =  list(set([ 'gartung' ] + CMSSW_L1))
-REQUEST_BUILD_RELEASE = list(set(['gartung'] + APPROVE_BUILD_RELEASE))
-TRIGGER_PR_TESTS = list(set([ "gartung"] + REQUEST_BUILD_RELEASE + [ a for a in authors if authors[a]>10 and not a in GITHUB_BLACKLIST_AUTHORS ]))
-PR_HOLD_MANAGERS = [ "gartung" ]
+CMSSW_L1 = ['LArSoft/Core']
+APPROVE_BUILD_RELEASE =  list(set([ 'LArSoft/Core' ] + CMSSW_L1))
+REQUEST_BUILD_RELEASE = list(set(['LArSoft/Core'] + APPROVE_BUILD_RELEASE))
+TRIGGER_PR_TESTS = list(set([ "LArSoft/Core"] + REQUEST_BUILD_RELEASE + [ a for a in authors if authors[a]>10 and not a in GITHUB_BLACKLIST_AUTHORS ]))
+PR_HOLD_MANAGERS = [ "LArSoft/Core" ]
 
 COMMON_CATEGORIES = [ "orp", "tests", "code-checks" ]
 EXTERNAL_CATEGORIES = [ "externals" ]
@@ -19,11 +19,11 @@ EXTERNAL_REPOS = [ "cms-data", "cms-externals", gh_user]
 
 CMSSW_REPOS = [ gh_user+"/"+gh_cmssw ]
 CMSDIST_REPOS = [ gh_user+"/"+gh_cmsdist ]
-CMSSW_ISSUES_TRACKERS = list(set(CMSSW_L1 + [ 'gartung' ]))
-COMPARISON_MISSING_MAP = [ "gartung" ]
+CMSSW_ISSUES_TRACKERS = list(set(CMSSW_L1 + [ 'LArSoft/Core' ]))
+COMPARISON_MISSING_MAP = [ "LArSoft/Core" ]
 
 CMSSW_L2 = {
-  "gartung": ["larsoft","larsoftobj"],
+  "LArSoft/Core": ["larsoft","larsoftobj"],
   CMSBUILD_USER:      ["tests" ],
 }
 
