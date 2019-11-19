@@ -1,6 +1,6 @@
 #!/bin/bash -e
 if [ -d $HOME/bin ] ; then export PATH=$HOME/bin:$PATH ; fi
-$(pgrep -a 'proofserv.exe'  | grep '^[1-9][0-9]* ' | sed 's| .*||' | xargs kill -9) || true
+$(pgrep -a 'proofserv.exe'  | grep '^[1-9][0-9]* ' | sed 's| .*||' | xargs --no-run-if-empty kill -9) || true
 for repo in cms cms-ib grid projects unpacked ; do
   ls -l /cvmfs/${repo}.cern.ch >/dev/null 2>&1 || true
 done
@@ -14,6 +14,13 @@ if [ "X$WORKSPACE" = "X" ] ; then echo DATA_ERROR="Missing workspace directory."
 if [ "${CLEANUP_WORKSPACE}" = "cleanup" ] ; then rm -rf $WORKSPACE ; fi
 mkdir -p $WORKSPACE/tmp $WORKSPACE/workspace
 rm -f $WORKSPACE/cmsos
+
+#Delete old failed builds
+if [ -d ${WORKSPACE}/workspace/auto-builds ] ; then
+  for failed in $(find ${WORKSPACE}/workspace/auto-builds -mindepth 2 -maxdepth 2 -name 'BUILD_FAILED' -type f | sed 's|/BUILD_FAILED$||') ; do
+    rm -rf ${failed} >/dev/null 2>&1 || true
+  done
+fi
 
 echo "DATA_SHELL=${SHELL}"
 

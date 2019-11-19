@@ -318,12 +318,17 @@ if ${BUILD_EXTERNAL} ; then
     fi
 
     # Build the whole cmssw-tool-conf toolchain
-    COMPILATION_CMD="PYTHONPATH= ./pkgtools/cmsBuild --force-tag --tag ${REPORT_H_CODE} --builders 3 -i $WORKSPACE/$BUILD_DIR $REF_REPO --repository $CMS_WEEKLY_REPO \
+    CMSBUILD_ARGS=""
+    if [ ${PKG_TOOL_VERSION} -gt 31 ] ; then CMSBUILD_ARGS="--force-tag --delete-build-directory" ; fi
+    COMPILATION_CMD="PYTHONPATH= ./pkgtools/cmsBuild ${CMSBUILD_ARGS} --tag ${REPORT_H_CODE} --builders 3 -i $WORKSPACE/$BUILD_DIR $REF_REPO --repository $CMS_WEEKLY_REPO \
         $SOURCE_FLAG --arch $ARCHITECTURE -j ${NCPU} build cms-common cms-git-tools cmssw-tool-conf"
     echo $COMPILATION_CMD > ${WORKSPACE}/cmsswtoolconf.log  # log the command to be run
     # run the command and both log it to file and display it
     (eval $COMPILATION_CMD && echo 'ALL_OK') 2>&1 | tee -a $WORKSPACE/cmsswtoolconf.log
     echo_section 'END OF BUILD LOG'
+    for d in bootstraptmp tmp RPMS SOURCES  SPECS  SRPMS WEB ; do
+      rm -rf $WORKSPACE/$BUILD_DIR/${d} || true
+    done
 
     TEST_ERRORS=$(grep -E "Error [0-9]$" $WORKSPACE/cmsswtoolconf.log) || true
     GENERAL_ERRORS=$(grep "ALL_OK" $WORKSPACE/cmsswtoolconf.log) || true
