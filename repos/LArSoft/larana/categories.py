@@ -45,6 +45,12 @@ CMSSW_L2 = {
   'knoepfel': [gh_repo],
   'chissg': [gh_repo],
   'vito-db': [gh_repo],
+  'chalt007': [gh_repo],
+  'dladams': [gh_repo],
+  'SFBayLaser': [gh_repo],
+  'tomjunk': [gh_repo],
+  'yangtj207': [gh_repo],
+  'hgreenlee': [gh_repo],
 }
 
 USERS_TO_TRIGGER_HOOKS = set(TRIGGER_PR_TESTS + CMSSW_ISSUES_TRACKERS + list(CMSSW_L2.keys()))
