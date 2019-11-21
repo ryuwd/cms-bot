@@ -39,12 +39,12 @@ COMPARISON_MISSING_MAP = []
 #github_user:[list of categories]
 CMSSW_L2 = {
   CMSBUILD_USER : ["tests", "code-checks" ],
-  'gartung': [gh_repo],
-  'lgarren': [gh_repo],
-  'erica-snider': [gh_repo],
-  'knoepfel': [gh_repo],
-  'chissg': [gh_repo],
-  'vitodb': [gh_repo],
+  'gartung': [gh_repo,'build'],
+  'lgarren': [gh_repo,'build'],
+  'erica-snider': [gh_repo,'build'],
+  'knoepfel': [gh_repo,'build'],
+  'chissg': [gh_repo,'build'],
+  'vitodb': [gh_repo,'build'],
   'chalt007': [gh_repo],
   'dladams': [gh_repo],
   'SFBayLaser': [gh_repo],
