@@ -373,6 +373,16 @@ def get_jenkins_job(issue):
   return "",""
 
 def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=False):
+  larsoftorg=gh.get_organization('LArSoft')
+  larsoftteams=larsoftorg.get_teams()
+  larsoft_core=larsoftteams[0]
+  larsoft_l1=larsoftteams[1]
+  larsoft_l2=larsoftteams[2]
+  larsoft_core_mems = [ mem.login for mem in larsoft_core.get_members() ]
+  larsoft_l1_mems = [ mem.login for mem in larsoft_l1.get_members() ] 
+  larsoft_l2_mems = [ mem.login for mem in larsoft_l2.get_members() ] 
+  larsoft_commenters = list(set(larsoft_core_mems + larsoft_l1_mems + larsoft_l2_mems))
+  print(larsoft_commenters)
   if (not force) and ignore_issue(repo_config, repo, issue): return
   api_rate_limits(gh)
   prId = issue.number
@@ -578,7 +588,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
   for c in issue.get_comments(): all_comments.append(c)
   for comment in all_comments:
     commenter = comment.user.login.encode("ascii", "ignore")
-    valid_commenter = commenter in TRIGGER_PR_TESTS + list(CMSSW_L2.keys()) + CMSSW_L1 + releaseManagers + [repo_org]
+    valid_commenter = commenter in TRIGGER_PR_TESTS + list(CMSSW_L2.keys()) + CMSSW_L1 + releaseManagers + [repo_org] + larsoft_commenters
     if (not valid_commenter) and (requestor!=commenter): continue
     comment_msg = comment.body.encode("ascii", "ignore") if comment.body else ""
     if (commenter in COMMENT_CONVERSION) and (comment.created_at<=COMMENT_CONVERSION[commenter]['comments_before']):
@@ -628,7 +638,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     # Some of the special users can say "hold" prevent automatic merging of
     # fully signed PRs.
     if re.match("^hold$", first_line, re.I):
-      if commenter in CMSSW_L1 + list(CMSSW_L2.keys()) + releaseManagers + PR_HOLD_MANAGERS: hold[commenter]=1
+      if commenter in CMSSW_L1 + list(CMSSW_L2.keys()) + releaseManagers + PR_HOLD_MANAGERS + larsoft-commenters: hold[commenter]=1 
       continue
     if re.match(REGEX_EX_CMDS, first_line, re.I):
       if commenter in CMSSW_L1 + list(CMSSW_L2.keys()) + releaseManagers + [requestor]:
