@@ -39,18 +39,9 @@ COMPARISON_MISSING_MAP = []
 #github_user:[list of categories]
 CMSSW_L2 = {
   CMSBUILD_USER : ["tests", "code-checks" ],
-  'gartung': [gh_repo,'build'],
-  'lgarren': [gh_repo,'build'],
-  'erica-snider': [gh_repo,'build'],
-  'knoepfel': [gh_repo,'build'],
-  'chissg': [gh_repo,'build'],
-  'vitodb': [gh_repo,'build'],
-  'chalt007': [gh_repo],
-  'dladams': [gh_repo],
-  'SFBayLaser': [gh_repo],
-  'tomjunk': [gh_repo],
-  'yangtj207': [gh_repo],
-  'hgreenlee': [gh_repo],
+  'LArSoft/level-1-managers': [gh_repo,'build'],
+  'LArSoft/Core': [gh_repo,'build'],
+  'LArSoft/level-2-managers': [gh_repo],
 }
 
 USERS_TO_TRIGGER_HOOKS = set(TRIGGER_PR_TESTS + CMSSW_ISSUES_TRACKERS + list(CMSSW_L2.keys()))
