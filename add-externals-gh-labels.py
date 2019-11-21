@@ -109,10 +109,8 @@ if __name__ == "__main__":
       all_labels = copy.deepcopy(COMMON_LABELS)
       for lab in COMPARISON_LABELS:
         all_labels[lab] = COMPARISON_LABELS[lab]
-      for cat in categories.COMMON_CATEGORIES:
+      for cat in categories.COMMON_CATEGORIES+list(categories.CMSSW_CATEGORIES.keys()):
         for lab in LABEL_TYPES:
           all_labels[cat+"-"+lab]=LABEL_TYPES[lab]
 
-      for lab in LABEL_TYPES:
-        all_labels[repo_config.GH_CMSSW_REPO+"-"+lab]=LABEL_TYPES[lab]
       setRepoLabels (gh, repo_config.GH_REPO_FULLNAME, all_labels, opts.dryRun)
