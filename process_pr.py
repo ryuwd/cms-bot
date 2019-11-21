@@ -878,7 +878,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     for cat in ["code-checks"]:
       if (cat in signatures) and (signatures[cat]=="rejected"):
         dryRun=True
-#        break
+        break
 
   old_labels = set([x.name.encode("ascii", "ignore") for x in issue.labels])
   print("Stats:",backport_pr_num,extra_labels)
@@ -1213,7 +1213,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     if not already_seen: commentMsg = messageNewPR
     else: commentMsg = messageUpdatedPR
     if (not triggerred_code_checks) and cmssw_repo and (pr.base.ref=="develop") and ("code-checks" in signatures) and (signatures["code-checks"]=="pending"):
-      trigger_code_checks=False #PG don't run code-checks automatically
+      trigger_code_checks=True
   elif new_categories:
     commentMsg = messageUpdatedPR
   elif not missingApprovals:
