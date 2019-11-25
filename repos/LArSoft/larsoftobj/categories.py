@@ -42,6 +42,7 @@ COMPARISON_MISSING_MAP = []
 CMSSW_L2 = {
   CMSBUILD_USER : ["tests", "code-checks" ],
   'LArSoft/level-1-managers': [gh_repo],
+  'LArSoft/level-2-managers': [ ],
 }
 
 USERS_TO_TRIGGER_HOOKS = set(TRIGGER_PR_TESTS + CMSSW_ISSUES_TRACKERS + list(CMSSW_L2.keys()))
