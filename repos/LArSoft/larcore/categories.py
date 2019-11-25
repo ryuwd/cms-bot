@@ -39,8 +39,7 @@ COMPARISON_MISSING_MAP = []
 #github_user:[list of categories]
 CMSSW_L2 = {
   CMSBUILD_USER : ["tests", "code-checks" ],
-  'LArSoft/level-1-managers': [gh_repo,'build'],
-  'LArSoft/Core': [gh_repo,'build'],
+  'LArSoft/level-1-managers': [gh_repo],
   'LArSoft/level-2-managers': [gh_repo],
 }
 

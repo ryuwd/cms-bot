@@ -3,7 +3,7 @@ from repo_config import GH_REPO_ORGANIZATION as gh_user
 from repo_config import CMSBUILD_USER
 from categories_map import CMSSW_CATEGORIES
 
-CMSSW_L1 = ['gartung','lgarren','erica-snider', 'knoepfel','chissg', 'vitodb' ]
+CMSSW_L1 = [ ]
 APPROVE_BUILD_RELEASE =  list(set([  ] + CMSSW_L1))
 REQUEST_BUILD_RELEASE = APPROVE_BUILD_RELEASE
 TRIGGER_PR_TESTS = list(set([] + REQUEST_BUILD_RELEASE))
@@ -38,8 +38,7 @@ COMPARISON_MISSING_MAP = []
 #github_user:[list of categories]
 CMSSW_L2 = {
   CMSBUILD_USER : ["tests", "code-checks" ],
-  'LArSoft/level-1-managers': [gh_repo,'build'],
-  'LArSoft/Core': [gh_repo,'build'],
+  'LArSoft/level-1-managers': [gh_repo],
   'LArSoft/level-2-managers': [gh_repo],
 }
 

@@ -33,4 +33,4 @@ CMS_BRANCH_MAP={
 }
 VALID_WEB_HOOKS=["issues","pull_request","issue_comment","push"]
 OPEN_ISSUE_FOR_PUSH_TESTS=True
-def file2Package(filename): return GH_CMSSW_REPO
+def file2Package(filename): return "/".join(filename.split("/")[0:1])

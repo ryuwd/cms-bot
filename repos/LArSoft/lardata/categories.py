@@ -3,7 +3,7 @@ from repo_config import GH_REPO_ORGANIZATION as gh_user
 from repo_config import CMSBUILD_USER
 from categories_map import CMSSW_CATEGORIES
 
-CMSSW_L1 = ['gartung', 'lgarren', 'erica-snider', 'knoepfel','chissg', 'vitodb' ]
+CMSSW_L1 = ['gartung', 'lgarren', 'erica-snider', 'knoepfel', 'chissg', 'vitodb' ]
 APPROVE_BUILD_RELEASE =  list(set([  ] + CMSSW_L1))
 REQUEST_BUILD_RELEASE = APPROVE_BUILD_RELEASE
 TRIGGER_PR_TESTS = list(set([] + REQUEST_BUILD_RELEASE))

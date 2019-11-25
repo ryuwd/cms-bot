@@ -381,8 +381,17 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
   larsoft_core_mems = [ mem.login for mem in larsoft_core.get_members() ]
   larsoft_l1_mems = [ mem.login for mem in larsoft_l1.get_members() ] 
   larsoft_l2_mems = [ mem.login for mem in larsoft_l2.get_members() ] 
-  larsoft_commenters = list(set(larsoft_core_mems + larsoft_l1_mems + larsoft_l2_mems))
-  print(larsoft_commenters)
+  print('CMSSW_L2 keys: %s' % CMSSW_L2.keys())
+  L1_CATS=CMSSW_L2['LArSoft/%s' % larsoft_l1.slug]
+  for mem in larsoft_l1_mems:
+      CMSSW_L2[mem]=L1_CATS
+  print('CMSSW_L2 keys: %s' % CMSSW_L2.keys())
+  L2_CATS=CMSSW_L2['LArSoft/%s' % larsoft_l2.slug]
+  for mem in larsoft_l2_mems:
+      CMSSW_L2[mem]=L2_CATS
+  print('CMSSW_L2 keys: %s' % CMSSW_L2.keys())
+  CMSSW_L1=larsoft_l1_mems
+  print(CMSSW_L1)
   if (not force) and ignore_issue(repo_config, repo, issue): return
   api_rate_limits(gh)
   prId = issue.number
@@ -588,7 +597,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
   for c in issue.get_comments(): all_comments.append(c)
   for comment in all_comments:
     commenter = comment.user.login.encode("ascii", "ignore")
-    valid_commenter = commenter in TRIGGER_PR_TESTS + list(CMSSW_L2.keys()) + CMSSW_L1 + releaseManagers + [repo_org] + larsoft_commenters
+    valid_commenter = commenter in TRIGGER_PR_TESTS + list(CMSSW_L2.keys()) + CMSSW_L1 + releaseManagers + [repo_org] 
     if (not valid_commenter) and (requestor!=commenter): continue
     comment_msg = comment.body.encode("ascii", "ignore") if comment.body else ""
     if (commenter in COMMENT_CONVERSION) and (comment.created_at<=COMMENT_CONVERSION[commenter]['comments_before']):
