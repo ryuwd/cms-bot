@@ -489,8 +489,8 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     if cms_repo and ((not cmssw_repo) or (pr.base.ref in RELEASE_BRANCH_PRODUCTION)):
       print("This pull request requires ORP approval")
       signing_categories.add("orp")
-      for l1 in CMSSW_L1:
-        if not l1 in CMSSW_L2: CMSSW_L2[l1]=[]
+      for l1 in larsoft_l1_mems:
+        if not l1 in larsoft_l2_mems: CMSSW_L2[l1]=[]
         if not "orp" in CMSSW_L2[l1]: CMSSW_L2[l1].append("orp")
 
     print("Following categories affected:")
@@ -597,7 +597,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
   for c in issue.get_comments(): all_comments.append(c)
   for comment in all_comments:
     commenter = comment.user.login.encode("ascii", "ignore")
-    valid_commenter = commenter in TRIGGER_PR_TESTS + list(CMSSW_L2.keys()) + CMSSW_L1 + releaseManagers + [repo_org] + larsoft_commenters
+    valid_commenter = commenter in TRIGGER_PR_TESTS + larsoft_l2_mems + larsoft_l1_mems + releaseManagers + [repo_org] + larsoft_commenters
     if (not valid_commenter) and (requestor!=commenter): continue
     comment_msg = comment.body.encode("ascii", "ignore") if comment.body else ""
     if (commenter in COMMENT_CONVERSION) and (comment.created_at<=COMMENT_CONVERSION[commenter]['comments_before']):
@@ -629,7 +629,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
       if (assign_type == "new categories assigned:") and (commenter == cmsbuild_user):
         for ex_cat in new_cats:
           if ex_cat in assign_cats: assign_cats[ex_cat] = 1
-      if ((commenter in CMSSW_L2) or (commenter in  CMSSW_ISSUES_TRACKERS + CMSSW_L1)):
+      if ((commenter in larsoft_l2_mems) or (commenter in  CMSSW_ISSUES_TRACKERS + larsoft_l1_mems)):
         if assign_type == "assign":
           for ex_cat in new_cats:
             if not ex_cat in signing_categories:
@@ -647,24 +647,24 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     # Some of the special users can say "hold" prevent automatic merging of
     # fully signed PRs.
     if re.match("^hold$", first_line, re.I):
-      if commenter in CMSSW_L1 + list(CMSSW_L2.keys()) + releaseManagers + PR_HOLD_MANAGERS + larsoft-commenters: hold[commenter]=1 
+      if commenter in larsoft_l1_mems + larsoft_l2_mems + releaseManagers + PR_HOLD_MANAGERS: hold[commenter]=1 
       continue
     if re.match(REGEX_EX_CMDS, first_line, re.I):
-      if commenter in CMSSW_L1 + list(CMSSW_L2.keys()) + releaseManagers + [requestor]:
+      if commenter in larsoft_l1_mems + larsoft_l2_mems + releaseManagers + [requestor]:
         check_extra_labels(first_line.lower(), extra_labels)
       continue
     if re.match(REGEX_EX_IGNORE_CHKS, first_line, re.I):
-      if commenter in CMSSW_L1 + list(CMSSW_L2.keys()) + releaseManagers:
+      if commenter in larsoft_l1_mems + larsoft_l2_mems + releaseManagers:
         ignore_tests = check_ignore_test (first_line.upper())
         if 'NONE' in ignore_tests: ignore_tests=[]
       continue
     if re.match(REGEX_EX_ENABLE_TESTS, first_line, re.I):
-      if commenter in CMSSW_L1 + list(CMSSW_L2.keys()) + releaseManagers:
+      if commenter in larsoft_l1_mems + larsoft_l2_mems + releaseManagers:
         enabled_tests = check_enable_test (first_line.upper())
         if 'NONE' in enabled_tests: enabled_tests=[]
       continue
     if re.match('^allow\s+@([^ ]+)\s+test\s+rights$',first_line, re.I):
-      if commenter in CMSSW_L1 + list(CMSSW_L2.keys()) + releaseManagers:
+      if commenter in larsoft_l1_mems + larsoft_l2_mems + releaseManagers:
         tester = first_line.split("@",1)[-1].split(" ",1)[0]
         if not tester in TRIGGER_PR_TESTS:
           TRIGGER_PR_TESTS.append(tester)
@@ -672,9 +672,9 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
           print("Added user in test category:",tester)
       continue
     if re.match("^unhold$", first_line, re.I):
-      if commenter in CMSSW_L1:
+      if commenter in larsoft_l1_mems:
         hold = {}
-      elif commenter in list(CMSSW_L2.keys()) + releaseManagers + PR_HOLD_MANAGERS:
+      elif commenter in larsoft_l2_mems + releaseManagers + PR_HOLD_MANAGERS:
         if commenter in hold: del hold[commenter]
       continue
     if (commenter == cmsbuild_user) and (re.match("^"+HOLD_MSG+".+", first_line)):
@@ -682,7 +682,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         u = u.strip().lstrip("@")
         if u in hold: hold[u]=0
     if CLOSE_REQUEST.match(first_line):
-      if (commenter in CMSSW_L1 + list(CMSSW_L2.keys()) + releaseManagers) or \
+      if (commenter in larsoft_l1_mems + larsoft_l2_mems + releaseManagers) or \
          ((not issue.pull_request) and (commenter in  CMSSW_ISSUES_TRACKERS)):
          mustClose = True
          print("==>Closing requested received from %s" % commenter)
@@ -765,10 +765,10 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
 
     if issue.pull_request or push_test_issue:
       # Check if the release manager asked for merging this.
-      if (commenter in releaseManagers + CMSSW_L1) and re.match("^\s*(merge)\s*$", first_line, re.I):
+      if (commenter in releaseManagers + larsoft_l1_mems) and re.match("^\s*(merge)\s*$", first_line, re.I):
         mustMerge = True
         mustClose = False
-        if (commenter in CMSSW_L1) and ("orp" in signatures): signatures["orp"] = "approved"
+        if (commenter in larsoft_l1_mems) and ("orp" in signatures): signatures["orp"] = "approved"
         continue
 
       # Check if the someone asked to trigger the tests
@@ -813,7 +813,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
           signatures["tests"] = "pending"
 
     # Check L2 signoff for users in this PR signing categories
-    if commenter in CMSSW_L2 and [x for x in CMSSW_L2[commenter] if x in signing_categories]:
+    if commenter in larsoft_l2_mems and [x for x in CMSSW_L2[commenter] if x in signing_categories]:
       ctype = ""
       selected_cats = []
       if re.match("^([+]1|approve[d]?|sign|signed)$", first_line, re.I):
