@@ -971,7 +971,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     new_l2s = ["@" + name
                for name, l2_categories in list(CMSSW_L2.items())
                for signature in new_assign_cats
-               if signature in l2_categories]
+               if signature in l2_categories and name not in set( larsoft_l1_mems + larsoft_l2_mems) ]
     if not dryRun: issue.create_comment("New categories assigned: "+",".join(new_assign_cats)+"\n\n"+",".join(new_l2s)+" you have been requested to review this Pull request/Issue and eventually sign? Thanks")
 
   #update blocker massge
@@ -1112,7 +1112,8 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
                             for name, l2_categories in list(CMSSW_L2.items())
                             for signature in signing_categories
                             if signature in l2_categories
-                               and signature in unsigned and signature not in ["orp"] ]
+                               and signature in unsigned and signature not in ["orp"]
+                               and name not in set( larsoft_l1_mems + larsoft_l2_mems)]
 
   missing_notifications = set(missing_notifications)
   # Construct message for the watchers
