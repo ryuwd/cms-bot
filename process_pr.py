@@ -392,7 +392,6 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
       else:
           CMSSW_L2[mem] = L2_CATS
   CMSSW_L1=larsoft_l1_mems
-  print(CMSSW_L1)
   if (not force) and ignore_issue(repo_config, repo, issue): return
   api_rate_limits(gh)
   prId = issue.number

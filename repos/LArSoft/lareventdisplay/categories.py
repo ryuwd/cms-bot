@@ -11,7 +11,7 @@ PR_HOLD_MANAGERS = [ ]
 
 COMMON_CATEGORIES = [ "tests", "code-checks" ]
 EXTERNAL_CATEGORIES = [ "externals" ]
-EXTERNAL_REPOS = [
+EXTERNAL_REPOS =  [
                   "LArSoft/larana",
                   "LArSoft/larcore",
                   "LArSoft/larcorealg",
@@ -21,6 +21,7 @@ EXTERNAL_REPOS = [
                   "LArSoft/lardataobj",
                   "LArSoft/larevt",
                   "LArSoft/larexamples",
+                  "LArSoft/lareventdisplay",
                   "LArSoft/larg4",
                   "LArSoft/larpandora",
                   "LArSoft/larsim",
@@ -30,6 +31,8 @@ EXTERNAL_REPOS = [
                   "LArSoft/larsoftobj",
                   ]
 
+EXTERNAL_REPOS.remove( gh_user+"/"+gh_repo )
+
 CMSSW_REPOS = [ gh_user+"/"+gh_repo ]
 CMSDIST_REPOS = [ ]
 CMSSW_ISSUES_TRACKERS = list(set(CMSSW_L1))
@@ -38,10 +41,11 @@ COMPARISON_MISSING_MAP = []
 #github_user:[list of categories]
 CMSSW_L2 = {
   CMSBUILD_USER : ["tests", "code-checks" ],
-  'LArSoft/level-1-managers': [gh_repo],
+  'LArSoft/level-1-managers': [gh_repo,'ups'],
   'LArSoft/level-2-managers': [gh_repo],
 }
 
 USERS_TO_TRIGGER_HOOKS = set(TRIGGER_PR_TESTS + CMSSW_ISSUES_TRACKERS + list(CMSSW_L2.keys()))
 CMS_REPOS = set(CMSDIST_REPOS + CMSSW_REPOS + EXTERNAL_REPOS)
 def external_to_package(repo_fullname): return ''
+

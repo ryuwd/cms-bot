@@ -3,7 +3,7 @@ from repo_config import GH_REPO_ORGANIZATION as gh_user
 from repo_config import CMSBUILD_USER
 from categories_map import CMSSW_CATEGORIES
 
-CMSSW_L1 = ['gartung', 'lgarren', 'erica-snider', 'knoepfel','chissg', 'vitodb']
+CMSSW_L1 = [ ]
 APPROVE_BUILD_RELEASE =  list(set([  ] + CMSSW_L1))
 REQUEST_BUILD_RELEASE = APPROVE_BUILD_RELEASE
 TRIGGER_PR_TESTS = list(set([] + REQUEST_BUILD_RELEASE))
@@ -14,6 +14,7 @@ EXTERNAL_CATEGORIES = [ "externals" ]
 EXTERNAL_REPOS =  [
                   "LArSoft/larana",
                   "LArSoft/larcore",
+                  "LArSoft/larcorealg",
                   "LArSoft/larcoreobj",
                   "LArSoft/lardata",
                   "LArSoft/lardataalg",
@@ -30,6 +31,8 @@ EXTERNAL_REPOS =  [
                   "LArSoft/larsoftobj",
                   ]
 
+EXTERNAL_REPOS.remove( gh_user+"/"+gh_repo )
+
 CMSSW_REPOS = [ gh_user+"/"+gh_repo ]
 CMSDIST_REPOS = [ ]
 CMSSW_ISSUES_TRACKERS = list(set(CMSSW_L1))
@@ -38,10 +41,11 @@ COMPARISON_MISSING_MAP = []
 #github_user:[list of categories]
 CMSSW_L2 = {
   CMSBUILD_USER : ["tests", "code-checks" ],
-  'LArSoft/level-1-managers': [gh_repo],
+  'LArSoft/level-1-managers': [gh_repo,'ups'],
   'LArSoft/level-2-managers': [gh_repo],
 }
 
 USERS_TO_TRIGGER_HOOKS = set(TRIGGER_PR_TESTS + CMSSW_ISSUES_TRACKERS + list(CMSSW_L2.keys()))
 CMS_REPOS = set(CMSDIST_REPOS + CMSSW_REPOS + EXTERNAL_REPOS)
 def external_to_package(repo_fullname): return ''
+
