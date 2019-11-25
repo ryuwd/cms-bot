@@ -382,15 +382,15 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
   larsoft_l1_mems = [ mem.login for mem in larsoft_l1.get_members() ] 
   larsoft_l2_mems = [ mem.login for mem in larsoft_l2.get_members() ] 
   larsoft_commenters = list(set(larsoft_core_mems + larsoft_l1_mems + larsoft_l2_mems))
-  print('CMSSW_L2 keys: %s' % CMSSW_L2.keys())
   L1_CATS=CMSSW_L2['LArSoft/%s' % larsoft_l1.slug]
   for mem in larsoft_l1_mems:
       CMSSW_L2[mem]=L1_CATS
-  print('CMSSW_L2 keys: %s' % CMSSW_L2.keys())
   L2_CATS=CMSSW_L2['LArSoft/%s' % larsoft_l2.slug]
   for mem in larsoft_l2_mems:
-      CMSSW_L2[mem]=L2_CATS
-  print('CMSSW_L2 keys: %s' % CMSSW_L2.keys())
+      if mem in larsoft_l1_mems:
+          CMSSW_L2[mem].extend(L2_CATS)
+      else:
+          CMSSW_L2[mem] = L2_CATS
   CMSSW_L1=larsoft_l1_mems
   print(CMSSW_L1)
   if (not force) and ignore_issue(repo_config, repo, issue): return
