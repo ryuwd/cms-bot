@@ -1005,7 +1005,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
                         " %(name)s.\n\n"
                         "%(l2s)s can you please review it and eventually sign/assign?"
                         " Thanks.\n\n"
-                        "cms-bot commands are listed <a href=\"http://cms-sw.github.io/cms-bot-cmssw-issues.html\">here</a>\n%(backport_msg)s",
+                        "cms-bot commands are listed <a href=\"https://cdcvs.fnal.gov/redmine/projects/larsoft/wiki/Pull_request_comments_that_trigger_CI_actions\">here</a>\n%(backport_msg)s",
                         msgPrefix=NEW_ISSUE_PREFIX,
                         user=requestor,
                         name=uname,
@@ -1155,7 +1155,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
                         "%(watchers)s"
                         "%(releaseManagers)s"
                         "%(patch_branch_warning)s\n"
-                        "cms-bot commands are listed <a href=\"http://cms-sw.github.io/cms-bot-cmssw-cmds.html\">here</a>\n",
+                        "cms-bot commands are listed <a href=\"https://cdcvs.fnal.gov/redmine/projects/larsoft/wiki/Pull_request_comments_that_trigger_CI_actions\">here</a>\n",
                         msgPrefix=NEW_PR_PREFIX,
                         user=pr.user.login,
                         name=pr.user.name and "(%s)" % pr.user.name or "",
@@ -1206,7 +1206,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
                           "%(l2s)s can you please review it and eventually sign?"
                           " Thanks.\n"
                           "%(watchers)s"
-                          "cms-bot commands are listed <a href=\"http://cms-sw.github.io/cms-bot-cmssw-cmds.html\">here</a>\n",
+                          "cms-bot commands are listed <a href=\"https://cdcvs.fnal.gov/redmine/projects/larsoft/wiki/Pull_request_comments_that_trigger_CI_actions\">here</a>\n",
                           msgPrefix=NEW_PR_PREFIX,
                           user=pr.user.login,
                           name=pr.user.name and "(%s)" % pr.user.name or "",
