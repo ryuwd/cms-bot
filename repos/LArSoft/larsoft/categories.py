@@ -41,8 +41,8 @@ COMPARISON_MISSING_MAP = []
 #github_user:[list of categories]
 CMSSW_L2 = {
   CMSBUILD_USER : ["tests", "code-checks" ],
-  'LArSoft/level-1-managers': [gh_repo],
-  'LArSoft/level-2-managers': [ ],
+  'LArSoft/level-1-managers': ['L1'],
+  'LArSoft/level-2-managers': ['L2'],
 }
 
 USERS_TO_TRIGGER_HOOKS = set(TRIGGER_PR_TESTS + CMSSW_ISSUES_TRACKERS + list(CMSSW_L2.keys()))
