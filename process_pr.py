@@ -835,7 +835,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
           signatures[sign] = "approved"
           has_categories_approval = True
           if sign == "L1": mustClose = False
-      elif ctype == "-1"
+      elif ctype == "-1":
         for sign in selected_cats:
           signatures[sign] = "rejected"
           has_categories_approval = False
