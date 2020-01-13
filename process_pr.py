@@ -598,7 +598,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
   for c in issue.get_comments(): all_comments.append(c)
   for comment in all_comments:
     commenter = comment.user.login.encode("ascii", "ignore")
-    valid_commenter = commenter in TRIGGER_PR_TESTS + larsoft_l2_mems + larsoft_l1_mems + releaseManagers + [repo_org] + larsoft_commenters
+    valid_commenter = commenter in TRIGGER_PR_TESTS + larsoft_l2_mems + larsoft_l1_mems + larsoft_core_mems + releaseManagers + [repo_org] + larsoft_commenters
     if (not valid_commenter) and (requestor!=commenter): continue
     comment_msg = comment.body.encode("ascii", "ignore") if comment.body else ""
     if (commenter in COMMENT_CONVERSION) and (comment.created_at<=COMMENT_CONVERSION[commenter]['comments_before']):
@@ -630,7 +630,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
       if (assign_type == "new categories assigned:") and (commenter == cmsbuild_user):
         for ex_cat in new_cats:
           if ex_cat in assign_cats: assign_cats[ex_cat] = 1
-      if ((commenter in larsoft_l2_mems) or (commenter in  CMSSW_ISSUES_TRACKERS + larsoft_l1_mems)):
+      if ((commenter in larsoft_l2_mems) or (commenter in larsoft_core_mems) or (commenter in  CMSSW_ISSUES_TRACKERS + larsoft_l1_mems)):
         if assign_type == "assign":
           for ex_cat in new_cats:
             if not ex_cat in signing_categories:
@@ -648,24 +648,24 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     # Some of the special users can say "hold" prevent automatic merging of
     # fully signed PRs.
     if re.match("^hold$", first_line, re.I):
-      if commenter in larsoft_l1_mems + larsoft_l2_mems + releaseManagers + PR_HOLD_MANAGERS: hold[commenter]=1 
+      if commenter in larsoft_l1_mems + larsoft_l2_mems + larsoft_core_mems + releaseManagers + PR_HOLD_MANAGERS: hold[commenter]=1 
       continue
     if re.match(REGEX_EX_CMDS, first_line, re.I):
-      if commenter in larsoft_l1_mems + larsoft_l2_mems + releaseManagers + [requestor]:
+      if commenter in larsoft_l1_mems + larsoft_l2_mems + larsoft_core_mems + releaseManagers + [requestor]:
         check_extra_labels(first_line.lower(), extra_labels)
       continue
     if re.match(REGEX_EX_IGNORE_CHKS, first_line, re.I):
-      if commenter in larsoft_l1_mems + larsoft_l2_mems + releaseManagers:
+      if commenter in larsoft_l1_mems + larsoft_l2_mems + larsoft_core_mems + releaseManagers:
         ignore_tests = check_ignore_test (first_line.upper())
         if 'NONE' in ignore_tests: ignore_tests=[]
       continue
     if re.match(REGEX_EX_ENABLE_TESTS, first_line, re.I):
-      if commenter in larsoft_l1_mems + larsoft_l2_mems + releaseManagers:
+      if commenter in larsoft_l1_mems + larsoft_l2_mems + larsoft_core_mems + releaseManagers:
         enabled_tests = check_enable_test (first_line.upper())
         if 'NONE' in enabled_tests: enabled_tests=[]
       continue
     if re.match('^allow\s+@([^ ]+)\s+test\s+rights$',first_line, re.I):
-      if commenter in larsoft_l1_mems + larsoft_l2_mems + releaseManagers:
+      if commenter in larsoft_l1_mems + larsoft_l2_mems + larsoft_core_mems + releaseManagers:
         tester = first_line.split("@",1)[-1].split(" ",1)[0]
         if not tester in TRIGGER_PR_TESTS:
           TRIGGER_PR_TESTS.append(tester)
@@ -675,7 +675,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     if re.match("^unhold$", first_line, re.I):
       if commenter in larsoft_l1_mems:
         hold = {}
-      elif commenter in larsoft_l2_mems + releaseManagers + PR_HOLD_MANAGERS:
+      elif commenter in larsoft_l2_mems + larsoft_core_mems + releaseManagers + PR_HOLD_MANAGERS:
         if commenter in hold: del hold[commenter]
       continue
     if (commenter == cmsbuild_user) and (re.match("^"+HOLD_MSG+".+", first_line)):
@@ -683,7 +683,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         u = u.strip().lstrip("@")
         if u in hold: hold[u]=0
     if CLOSE_REQUEST.match(first_line):
-      if (commenter in larsoft_l1_mems + larsoft_l2_mems + releaseManagers) or \
+      if (commenter in larsoft_l1_mems + larsoft_l2_mems + larsoft_core_mems + releaseManagers) or \
          ((not issue.pull_request) and (commenter in  CMSSW_ISSUES_TRACKERS)):
          mustClose = True
          print("==>Closing requested received from %s" % commenter)
@@ -814,7 +814,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
           signatures["tests"] = "pending"
 
     # Check L2 signoff for users in this PR signing categories
-    if commenter in larsoft_l2_mems and [x for x in CMSSW_L2[commenter] if x in signing_categories]:
+    if commenter in larsoft_l2_mems or commenter in larsoft_core_mems  and [x for x in CMSSW_L2[commenter] if x in signing_categories]:
       ctype = ""
       selected_cats = []
       if re.match("^([+]1|approve[d]?|sign|signed)$", first_line, re.I):
@@ -972,7 +972,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     new_l2s = ["@" + name
                for name, l2_categories in list(CMSSW_L2.items())
                for signature in new_assign_cats
-               if signature in l2_categories and name not in set( larsoft_l1_mems + larsoft_l2_mems) ]
+               if signature in l2_categories and name not in set( larsoft_l1_mems + larsoft_l2_mems + larsoft_core_mems ) ]
     if not dryRun: issue.create_comment("New categories assigned: "+",".join(new_assign_cats)+"\n\n"+",".join(new_l2s)+" you have been requested to review this Pull request/Issue and eventually sign? Thanks")
 
   #update blocker massge
@@ -1114,7 +1114,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
                             for signature in signing_categories
                             if signature in l2_categories
                                and signature in unsigned and signature not in ["L1"]
-                               and name not in set( larsoft_l1_mems + larsoft_l2_mems)]
+                               and name not in set( larsoft_l1_mems + larsoft_l2_mems + larsoft_core_mems)]
 
   missing_notifications = set(missing_notifications)
   # Construct message for the watchers
