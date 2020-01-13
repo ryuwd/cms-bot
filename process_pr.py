@@ -483,15 +483,16 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
 
     # For PR, we always require tests.
     signing_categories.add("tests")
+    signing_categories.add("L1")
     if add_external_category: signing_categories.add("externals")
     # We require ORP approval for releases which are in production.
     # or all externals package
     if cms_repo and ((not cmssw_repo) or (pr.base.ref in RELEASE_BRANCH_PRODUCTION)):
       print("This pull request requires ORP approval")
-      signing_categories.add("orp")
+      signing_categories.add("L1")
       for l1 in larsoft_l1_mems:
         if not l1 in larsoft_l2_mems: CMSSW_L2[l1]=[]
-        if not "orp" in CMSSW_L2[l1]: CMSSW_L2[l1].append("orp")
+        if not "L1" in CMSSW_L2[l1]: CMSSW_L2[l1].append("L1")
 
     print("Following categories affected:")
     print("\n".join(signing_categories))
@@ -768,7 +769,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
       if (commenter in releaseManagers + larsoft_l1_mems) and re.match("^\s*(merge)\s*$", first_line, re.I):
         mustMerge = True
         mustClose = False
-        if (commenter in larsoft_l1_mems) and ("orp" in signatures): signatures["orp"] = "approved"
+        if (commenter in larsoft_l1_mems) and ("L1" in signatures): signatures["L1"] = "approved"
         continue
 
       # Check if the someone asked to trigger the tests
@@ -833,15 +834,15 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         for sign in selected_cats:
           signatures[sign] = "approved"
           has_categories_approval = True
-          if sign == "orp": mustClose = False
-      elif ctype == "-1":
+          if sign == "L1": mustClose = False
+      elif ctype == "-1"
         for sign in selected_cats:
           signatures[sign] = "rejected"
           has_categories_approval = False
-          if sign == "orp": mustClose = False
+          if sign == "L1": mustClose = False
       elif ctype == "reopen":
-        if "orp" in CMSSW_L2[commenter]:
-          signatures["orp"] = "pending"
+        if "L1" in CMSSW_L2[commenter]:
+          signatures["L1"] = "pending"
           mustClose = False
       continue
 
@@ -943,7 +944,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
   missingApprovals = [x
                       for x in labels
                       if     not x.endswith("-approved")
-                         and not x.startswith("orp")
+                         and not x.startswith("L1")
                          and not x.startswith("tests")
                          and not x.startswith("pending-assignment")
                          and not x.startswith("comparison")
@@ -954,7 +955,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
   if not missingApprovals:
     print("The pull request is complete.")
   if missingApprovals:
-    labels.append("pending-signatures")
+    labels.append("signatures-pending")
   elif not "pending-assignment" in labels:
     labels.append("fully-signed")
   if need_external: labels.append("requires-external")
@@ -1071,7 +1072,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
 
   autoMergeMsg = ""
   if (("fully-signed" in labels) and ("tests-approved" in labels) and
-      ((not "orp" in signatures) or (signatures["orp"] == "approved"))):
+      ((not "L1" in signatures) or (signatures["L1"] == "approved"))):
     autoMergeMsg = "This pull request will be automatically merged."
   else:
     if is_hold:
@@ -1085,7 +1086,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
       autoMergeMsg = format("This pull request requires a new package and "
                             " will not be merged. %(managers)s",
                             managers=releaseManagersList)
-    elif ("orp" in signatures) and (signatures["orp"] != "approved"):
+    elif ("L1" in signatures) and (signatures["L1"] != "approved"):
       autoMergeMsg = format("This pull request will now be reviewed by the release team"
                             " before it's merged. %(managers)s (and backports should be raised in the release meeting by the corresponding L2)",
                             managers=releaseManagersList)
@@ -1112,7 +1113,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
                             for name, l2_categories in list(CMSSW_L2.items())
                             for signature in signing_categories
                             if signature in l2_categories
-                               and signature in unsigned and signature not in ["orp"]
+                               and signature in unsigned and signature not in ["L1"]
                                and name not in set( larsoft_l1_mems + larsoft_l2_mems)]
 
   missing_notifications = set(missing_notifications)
@@ -1261,7 +1262,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
   # Check if it needs to be automatically merged.
   if all(["fully-signed" in labels,
           "tests-approved" in labels,
-          "orp-approved" in labels,
+          "L1-approved" in labels,
           not "hold" in labels,
           not "new-package-pending" in labels]):
     print("This pull request can be automatically merged")
