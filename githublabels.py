@@ -15,8 +15,8 @@ LABEL_TYPES = {
 COMMON_LABELS = {
   "tests-started": LABEL_COLORS["hold"],
   "fully-signed": LABEL_COLORS["approved"],
-  "pending-signatures": LABEL_COLORS["hold"],
-  "pending-assignment": LABEL_COLORS["hold"],
+  "signatures-pending": LABEL_COLORS["hold"],
+  "assignment-pending": LABEL_COLORS["hold"],
   "new-package-pending" : LABEL_COLORS["rejected"],
   "bug-fix" : "b8860b",
   "new-feature" : LABEL_COLORS["info"],
