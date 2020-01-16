@@ -600,6 +600,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
   comp_warnings = False
   extra_testers = []
   all_comments = [issue]
+  api_rate_limits(gh)
   for c in issue.get_comments(): all_comments.append(c)
   for comment in all_comments:
     commenter = comment.user.login.encode("ascii", "ignore")
