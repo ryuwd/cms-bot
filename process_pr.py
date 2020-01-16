@@ -374,13 +374,18 @@ def get_jenkins_job(issue):
 
 def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=False):
   larsoftorg=gh.get_organization('LArSoft')
+  api_rate_limits(gh)
   larsoftteams=larsoftorg.get_teams()
+  api_rate_limits(gh)
   larsoft_core=larsoftteams[0]
   larsoft_l1=larsoftteams[1]
   larsoft_l2=larsoftteams[2]
   larsoft_core_mems = [ mem.login for mem in larsoft_core.get_members() ]
+  api_rate_limits(gh)
   larsoft_l1_mems = [ mem.login for mem in larsoft_l1.get_members() ] 
+  api_rate_limits(gh)
   larsoft_l2_mems = [ mem.login for mem in larsoft_l2.get_members() ] 
+  api_rate_limits(gh)
   larsoft_commenters = list(set(larsoft_core_mems + larsoft_l1_mems + larsoft_l2_mems))
   L1_CATS=CMSSW_L2['LArSoft/%s' % larsoft_l1.slug]
   for mem in larsoft_l1_mems:
