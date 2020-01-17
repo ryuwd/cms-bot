@@ -8,6 +8,6 @@
 #  - subsystem2/package1
 #  - subsystem2/package2
 #LArSoft/Core:
-#  - github-prs
+#  - larutils
 group1:
-  - github-prs
+  - larutils
