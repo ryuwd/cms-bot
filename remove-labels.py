@@ -5,14 +5,13 @@ from os import environ
 
 def clean_labels(repo):
     deflabels=['bug','documentation','duplicate','enhancement','good first idea','help wanted', 'invalid', 'question', 'wontfix']
-    api_rate_limits(gh)
+    #api_rate_limits(gh)
     print repo.name
-    api_rate_limits(gh)
+    #api_rate_limits(gh)
     for label in repo.get_labels():
-        if not label.name in deflabels:
-            print label.name
-            label.delete()
-        api_rate_limits(gh)
+        print label.name
+        label.delete()
+        #api_rate_limits(gh)
         
 if __name__ ==  "__main__":
     gh = Github(login_or_token=environ['GITHUBTOKEN'])

@@ -30,23 +30,23 @@ def setRepoLabels (gh, repo_name, all_labels, dryRun=False, ignore=[]):
       repos.append(repo)
   else:
     repos.append(gh.get_repo(repo_name))
-  api_rate_limits(gh)
+  #api_rate_limits(gh)
   for repo in repos:
     print("Checking repository ", repo.full_name, ", DryRun:",dryRun)
     cur_labels = {}
     for lab in repo.get_labels():
       cur_labels [lab.name]=lab
-    api_rate_limits(gh)
+    #api_rate_limits(gh)
     for lab in all_labels:
       if not lab in cur_labels:
         print("  Creating new label ",lab,"=>",all_labels[lab])
         if not dryRun:
           repo.create_label(lab, all_labels[lab])
-          api_rate_limits(gh)
+          #api_rate_limits(gh)
       elif cur_labels[lab].color != all_labels[lab]:
         if not dryRun:
           cur_labels[lab].edit(lab, all_labels[lab])
-          api_rate_limits(gh)
+          #api_rate_limits(gh)
         print("  Label ",lab," color updated: ",cur_labels[lab].color ," => ",all_labels[lab])
 
 if __name__ == "__main__":
@@ -67,8 +67,8 @@ if __name__ == "__main__":
 
   import repo_config
   from os import environ
-  gh = Github(login_or_token=environ['GITHUBTOKEN'])
-  api_rate_limits(gh)
+  gh = Github(login_or_token=environ['GITHUBTOKEN'], retry=3)
+  #api_rate_limits(gh)
 
   if opts.cmssw or opts.externals:
     all_labels = COMMON_LABELS

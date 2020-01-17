@@ -33,7 +33,7 @@ if __name__ == "__main__":
       if exists(join(repo_dir,"repo_config.py")): sys.path.insert(0,repo_dir)
       import repo_config
       from os import environ
-      gh = Github(login_or_token=environ['GITHUBTOKEN'])
+      gh = Github(login_or_token=environ['GITHUBTOKEN'], retry=3)
       repo = gh.get_repo( opts.repository )
       pr   = repo.get_issue(opts.pr)
       pr.create_comment(msg)
