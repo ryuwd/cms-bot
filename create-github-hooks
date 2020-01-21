@@ -105,6 +105,7 @@ if __name__ == "__main__":
     print("Found hooks:",hooks)
     repo = repos[repo_name]
     if not repo: repo = gh.get_repo(repo_name)
+    repo.edit(default_branch='develop')
     repo_hooks_all = {}
     for hook in repo.get_hooks():
       if "name" in hook.config:
