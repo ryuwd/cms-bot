@@ -63,6 +63,7 @@ TEST_WAIT_GAP=720
 
 
 LARSOFT_REPOS =  ["larana",
+                  "larbatch",
                   "larcore",
                   "larcorealg",
                   "larcoreobj",
@@ -74,8 +75,10 @@ LARSOFT_REPOS =  ["larana",
                   "lareventdisplay",
                   "larg4",
                   "larpandora",
+                  "larpandoracontent",
                   "larsim",
                   "larreco",
+                  "larutils",
                   "larwirecell",
                   "larsoft",
                   "larsoftobj",
