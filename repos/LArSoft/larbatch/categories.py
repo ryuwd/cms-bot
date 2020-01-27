@@ -7,7 +7,7 @@ CMSSW_L1 = [ ]
 APPROVE_BUILD_RELEASE =  list(set([  ] + CMSSW_L1))
 REQUEST_BUILD_RELEASE = APPROVE_BUILD_RELEASE
 TRIGGER_PR_TESTS = list(set([] + REQUEST_BUILD_RELEASE))
-PR_HOLD_MANAGERS = [ ]
+PR_HOLD_MANAGERS = ['hgreenlee', 'tomjunk' ]
 
 COMMON_CATEGORIES = [ "L1", "tests", "code-checks" ]
 EXTERNAL_CATEGORIES = [ "externals" ]
