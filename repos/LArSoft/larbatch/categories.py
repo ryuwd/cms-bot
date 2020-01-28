@@ -3,11 +3,11 @@ from repo_config import GH_REPO_ORGANIZATION as gh_user
 from repo_config import CMSBUILD_USER
 from categories_map import CMSSW_CATEGORIES
 
-CMSSW_L1 = [ ]
+CMSSW_L1 = ['hgreenlee', 'tomjunk']
 APPROVE_BUILD_RELEASE =  list(set([  ] + CMSSW_L1))
 REQUEST_BUILD_RELEASE = APPROVE_BUILD_RELEASE
 TRIGGER_PR_TESTS = list(set([] + REQUEST_BUILD_RELEASE))
-PR_HOLD_MANAGERS = ['hgreenlee', 'tomjunk' ]
+PR_HOLD_MANAGERS = [ ]
 
 COMMON_CATEGORIES = [ "L1", "tests", "code-checks" ]
 EXTERNAL_CATEGORIES = [ "externals" ]
