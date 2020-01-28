@@ -2,7 +2,8 @@
 from __future__ import print_function
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "../"))
+#sys.path.append(os.path.join(os.path.dirname(__file__), "../"))
+sys.path.append('./')
 
 from releases import *
 from categories import *
@@ -14,7 +15,7 @@ import re
 KEY_RE = "^[^@]+"
 VALUE_RE = "[A-Za-z0-0.*+]"
 
-w = yaml.load(open("watchers.yaml", "r"))
+w = yaml.load(open("watchers.yaml", "r"), Loader=yaml.FullLoader)
 assert(type(w) == dict)
 for (key, value) in w.items():
   assert(type(key) == str)
@@ -28,7 +29,7 @@ for (key, value) in w.items():
 assert(CMSSW_CATEGORIES)
 assert(type(CMSSW_CATEGORIES) == dict)
 
-PACKAGE_RE = "^([A-Z][0-9A-Za-z]*(/[a-zA-Z][0-9A-Za-z]*|)|.gitignore|pull_request_template.md|.clang-[^/]+)$"
+PACKAGE_RE = "^([a-zA-Z][0-9A-Za-z]*(/[a-zA-Z][0-9A-Za-z]*|)|.gitignore|pull_request_template.md|.clang-[^/]+|CMakeLists.txt)$"
 
 for (key, value) in CMSSW_CATEGORIES.items():
   assert(type(key) == str)
@@ -42,7 +43,7 @@ for (key, value) in CMSSW_CATEGORIES.items():
     assert(type(p) == str)
     assert(re.match(PACKAGE_RE, p))
 
-w = yaml.load(open("super-users.yaml", "r"))
+w = yaml.load(open("super-users.yaml", "r"), Loader=yaml.FullLoader)
 
 assert(type(w) == list)
 for p in w:
