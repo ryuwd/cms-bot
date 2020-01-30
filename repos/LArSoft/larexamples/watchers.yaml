@@ -9,5 +9,3 @@
 #  - subsystem2/package2
 #LArSoft/Core:
 #  - larexamples
-group1:
-  - larexamples

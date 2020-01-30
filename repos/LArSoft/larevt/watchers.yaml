@@ -9,5 +9,3 @@
 #  - subsystem2/package2
 #LArSoft/Core:
 #  - larevt
-group1:
-  - larevt
