@@ -1092,7 +1092,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
                             managers=releaseManagersList)
     elif ("L1" in signatures) and (signatures["L1"] != "approved"):
       autoMergeMsg = format("This pull request will now be reviewed by the release team"
-                            " before it's merged. %(managers)s (and backports should be raised in the release meeting by the corresponding L2)",
+                            " before it's merged.)",
                             managers=releaseManagersList)
 
   devReleaseRelVal = ""
