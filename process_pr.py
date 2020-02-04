@@ -335,11 +335,12 @@ def check_test_cmd_lar(first_line, repo):
         if not repo.startswith('LArsoft/'):
             fullreponame='LArSoft/'+repo
         ghrepo = gh.get_repo(fullreponame)
-        for branch in branches:
-            pulls = ghrepo.get_pulls(state='open', head=branch)
-            print('pull requests with head=%s in repo %s'%(branch,fullreponame))
-            for pull in pulls:
-                prs.add('%s#%s'%(fullreponame,pull.number))
+        pulls = ghrepo.get_pulls(state='open')
+        for pull in pulls:
+            for branch in branches:
+                if branch in pull.head.label:
+                    print('pull request #%s with from=%s in repo %s'%(pull.number, branch, fullreponame))
+                    prs.add('%s#%s'%(fullreponame,pull.number))
 
     return (True, "", ','.join(sorted(list(prs))), "", "")
 
