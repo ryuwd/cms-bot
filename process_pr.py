@@ -296,7 +296,6 @@ def check_test_cmd_new(first_line, repo):
     wfs = ""
     prs= []
     cmssw_que = ""
-    print(m.groups())
     if m.group(6): wfs = ",".join(set(m.group(6).replace(" ","").split(",")))
     if m.group(11):
       for pr in [x.strip().split('/github.com/',1)[-1].replace('/pull/','#').strip('/') for x in m.group(11).split(",")]:
@@ -338,6 +337,7 @@ def check_test_cmd_lar(first_line, repo):
         pulls = ghrepo.get_pulls(state='open')
         for pull in pulls:
             for branch in branches:
+                print(branch)
                 if branch in pull.head.label:
                     print('pull request #%s with from=%s in repo %s'%(pull.number, branch, fullreponame))
                     prs.add('%s#%s'%(fullreponame,pull.number))
@@ -383,7 +383,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
   larsoft_l1=larsoftteams[1]
   larsoft_l2=larsoftteams[2]
   larsoft_core_mems = [ mem.login for mem in larsoft_core.get_members() ]
-  larsoft_l1_mems = [ mem.login for mem in larsoft_l1.get_members() ] 
+  larsoft_l1_mems = [ mem.login for mem in larsoft_l1.get_members() ] + CMSSW_L1
   larsoft_l2_mems = [ mem.login for mem in larsoft_l2.get_members() ] 
   larsoft_commenters = list(set(larsoft_core_mems + larsoft_l1_mems + larsoft_l2_mems))
   L1_CATS=CMSSW_L2['LArSoft/%s' % larsoft_l1.slug]
@@ -395,7 +395,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
           CMSSW_L2[mem].extend(L2_CATS)
       else:
           CMSSW_L2[mem] = L2_CATS
-  CMSSW_L1=larsoft_l1_mems
+
   if (not force) and ignore_issue(repo_config, repo, issue): return
   api_rate_limits(gh)
   prId = issue.number
