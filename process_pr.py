@@ -444,8 +444,8 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
   last_commit_date = None
   push_test_issue = False
   requestor = issue.user.login.encode("ascii", "ignore")
-  ignore_tests = []
-  enabled_tests = []
+  ignore_tests = ''
+  enable_tests = ''
   if issue.pull_request:
     pr   = repo.get_pull(prId)
     if pr.changed_files==0:
@@ -886,8 +886,8 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
   print("All assigned cats:",",".join(list(assign_cats.keys())))
   print("Newly assigned cats:",",".join(new_assign_cats))
   print("Ignore tests:",ignore_tests)
-  print("Enabled tests:",enabled_tests)
-  print("Tests: %s, %s" % (cmsdist_pr, cmssw_prs))
+  print("Enabled tests:",enable_tests)
+  print("Tests: %s" % ( cmssw_prs))
 
   # Labels coming from signature.
   labels = []

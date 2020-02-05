@@ -11,3 +11,9 @@ SPECIAL_RELEASE_MANAGERS=[]
 RELEASE_MANAGERS={}
 USERS_TO_TRIGGER_HOOKS = set(SPECIAL_RELEASE_MANAGERS + [ m for rel in RELEASE_MANAGERS for m in rel ])
 
+def get_release_managers(branch):
+  return []
+
+def is_closed_branch(branch):
+  return False
+
