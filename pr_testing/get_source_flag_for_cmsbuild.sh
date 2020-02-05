@@ -4,7 +4,7 @@
 # ---
 SCRIPTPATH="$( cd "$(dirname "$0")" ; /bin/pwd -P )"  # Absolute path to script
 CMS_BOT_DIR=$(dirname ${SCRIPTPATH})  # To get CMS_BOT dir path
-WORKSPACE=$(dirname ${CMS_BOT_DIR} )
+if [ -z $WORKSPACE ] ; then WORKSPACE=$(dirname ${CMS_BOT_DIR} ) ; fi
 CACHED=${WORKSPACE}/CACHED
 
 PKG_REPO=$1       # Repo of external (ex. cms-sw/root)
@@ -13,7 +13,11 @@ CMS_SW_TAG=$3     # CMS SW TAG found in config_map.py
 ARCHITECTURE=$4   # Architecture (ex. slc7_amd64_gcc700)
 CMS_REPO=$5       # cms repository (ex cms.week0)
 BUILD_DIR=$6      # Where pkgtools/cmsBuild builds software
-if [ "${CMS_REPO}" != "" ] ; then CMS_REPO="--repository ${CMS_REPO}" ; fi
+if [ "${CMS_REPO}" != "" ] ; then
+  CMS_REPO="--repository ${CMS_REPO}"
+else
+  CMS_REPO="--weekly"
+fi
 if [ "${BUILD_DIR}" = "" ] ; then BUILD_DIR="testBuildDir" ; fi
 PKG_NAME=$(echo ${PKG_REPO} | sed 's|.*/||')      # Repo of external (ex. cms-sw/root)
 
@@ -71,6 +75,10 @@ N=$(echo ${SOURCES} | tr '#' '\n' | grep -ci ':source' ) || true
 echo "Number of sources: " ${N}
 echo "Sources:"
 echo ${SOURCES}
+submodules=false
+if [ `grep "submodules=1" <<< ${SOURCES} | wc -l` != 0 ]; then
+    submodules=true
+fi
 
 if [ ${N} -eq 0 ]; then
    >&2 echo "ERROR: External sources not found"
@@ -84,9 +92,20 @@ fi
 OUTPUT=$(echo ${SOURCES}  | sed 's/ .*//' | tr '#' '\n' )
 SOURCE_NAME=$(echo ${OUTPUT} | sed 's/.*://' | sed 's/=.*//')
 DIR_NAME=$(echo ${OUTPUT} | sed 's/.*=//')
+#check for submodules
+if $submodules; then
+    pushd ${PKG_NAME}
+    git submodule update --init --recursive
+    popd
+fi
 # Move to other path
-rm -rf ${PKG_NAME}/.git  # remove git metadata - we wont need it when packing.
+if [ "$KEEP_SOURCE_GIT" != "true" ] ; then
+    rm -rf ${PKG_NAME}/.git  # remove git metadata - we wont need it when packing.
+fi
 if [ ${PKG_NAME} != ${DIR_NAME} ]; then
-    mv ${PKG_NAME} ${DIR_NAME}
+    if [ ! -e ${DIR_NAME} ] ; then
+        mv ${PKG_NAME} ${DIR_NAME}
+        ln -s ${DIR_NAME} ${PKG_NAME}
+    fi
 fi
 echo "--source ${SPEC_NAME}:${SOURCE_NAME}=$(pwd)/${DIR_NAME}" >> get_source_flag_result.txt

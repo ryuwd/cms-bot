@@ -4,6 +4,7 @@ from cms_static import GH_CMSSW_ORGANIZATION as gh_user
 from cms_static import GH_CMSSW_REPO as gh_cmssw
 from categories_map import CMSSW_CATEGORIES
 from repo_config import CMSBUILD_USER
+from releases import SPECIAL_RELEASE_MANAGERS
 
 authors = {}
 GITHUB_BLACKLIST_AUTHORS = []
@@ -31,6 +32,7 @@ USERS_TO_TRIGGER_HOOKS = set(TRIGGER_PR_TESTS + CMSSW_ISSUES_TRACKERS + list(CMS
 CMS_REPOS = set(CMSDIST_REPOS + CMSSW_REPOS + EXTERNAL_REPOS)
 from datetime import datetime
 COMMENT_CONVERSION = {}
+COMMENT_CONVERSION['kpedro88']={'comments_before': datetime.strptime('2018-07-13','%Y-%m-%d'), 'comments':[('+1', '+upgrade')]}
 
 
 def external_to_package(repo_fullname):

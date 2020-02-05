@@ -40,10 +40,12 @@ RELEASE_QUEUE=`echo $RELEASE_NAME | sed -e 's/_X.*/_X/'`
 
 # Hardcode special queues like SLHC one.
 EXTRA_REPOS=""
+CMS_COMMON="cms-common"
 case $RELEASE_NAME in
   *SLHCDEV*) ;;
   *SLHC*) RELEASE_QUEUE=${RELEASE_QUEUE}_SLHC ;;
   *_DEVEL_X_*) EXTRA_REPOS="--extra-repositories cms.week0,cms.week1" ;;
+  CMSSW_5_*) CMS_COMMON="";;
 esac
 
 CMSDIST_REPO=cms-sw
@@ -106,10 +108,8 @@ if [ "X`PKGTOOLS/cmsBuild --help | grep tag=NAME`" != "X" ] ; then
 fi
 
 CMSBUILD_CMD="PKGTOOLS/cmsBuild $EXTRA_REPOS $USE_DEV --builders $BUILD_JOBS -j $BUILD_NPROC --repository $REPOSITORY --architecture $ARCHITECTURE --work-dir ${WRKDIR} $CMS_TAG"
-PKGTOOLS_VER=$(echo $PKGTOOLS_TAG | cut -d- -f2)
-if [ ${PKGTOOLS_VER} -gt 31 ] ; then
-  CMSBUILD_CMD="$CMSBUILD_CMD --delete-build-directory"
-fi
+if [ $(./PKGTOOLS/cmsBuild --help | grep '\-\-monitor' | wc -l) -gt 0 ] ; then CMSBUILD_CMD="${CMSBUILD_CMD} --monitor" ; fi
+if [ $(./PKGTOOLS/cmsBuild --help | grep '\-\-delete-build-directory' | wc -l) -gt 0 ] ; then CMSBUILD_CMD="${CMSBUILD_CMD} --delete-build-directory" ; fi
 PYTHONPATH= $CMSBUILD_CMD --debug build SCRAMV1
 # Decide if we already have a release which uses the same CMSDIST.
 pushd ${WRKDIR}
@@ -169,7 +169,7 @@ pushd CMSDIST
 popd
 
 PYTHONPATH= $CMSBUILD_CMD --specs-only build $PACKAGE_NAME
-TOOL_CONF_PACKAGES="local-cern-siteconf `grep '^%define \(build\|\)directpkgreqs' ${WRKDIR}/SPECS/cms/$PACKAGE_NAME/*/spec | grep -v '%{nil}' | sed 's|.*directpkgreqs[ \t]*||' | tr ' ' '\n' | cut -f2 -d/ | sort | uniq | tr '\n' ' '`"
+TOOL_CONF_PACKAGES="${CMS_COMMON} local-cern-siteconf `grep '^%define \(build\|\)directpkgreqs' ${WRKDIR}/SPECS/cms/$PACKAGE_NAME/*/spec | grep -v '%{nil}' | sed 's|.*directpkgreqs[ \t]*||' | tr ' ' '\n' | cut -f2 -d/ | sort | uniq | tr '\n' ' '`"
 echo DATE=`date`
 EXTERNAL_FAILED=NO
 PYTHONPATH=  $CMSBUILD_CMD build $TOOL_CONF_PACKAGES || EXTERNAL_FAILED=YES

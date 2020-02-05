@@ -151,6 +151,7 @@ makortel:
   - Utilities/DCacheAdaptor
   - Utilities/General
   - Utilities/LStoreAdaptor
+  - Utilities/StaticAnalyzers
   - Utilities/StorageFactory
   - Utilities/Testing
   - Utilities/XrdAdaptor
@@ -555,8 +556,6 @@ gbenelli:
 - SimTracker/Common
 - SimTracker/Configuration
 - SimTracker/Records
-geoff-smith:
-- HLTrigger/Configuration
 ghugo83:
 - Geometry/TrackerCommonData
 gpetruc:
@@ -582,6 +581,19 @@ hatakeyamak:
 - DataFormats/ParticleFlowCandidate
 - DataFormats/ParticleFlowReco
 - DataFormats/PatCandidates
+- CommonTools/ParticleFlow
+- CommonTools/PileupAlgos
+- CommonTools/RecoAlgos
+- PhysicsTools/PatAlgos
+- PhysicsTools/PatUtils
+- PhysicsTools/RecoAlgos
+- RecoLocalCalo/HGC
+- SimCalorimetry/HGCalSimProducers
+- DataFormats/HGCDigi
+- DataFormats/HGCRecHit
+- Validation/HGCalValidation
+- RecoLocalCalo/HGCalRecAlgos
+- RecoLocalCalo/HGCalRecProducers
 HuguesBrun:
 - DataFormats/CSCRecHit
 - DataFormats/GEMRecHit
@@ -1116,10 +1128,8 @@ rappoccio:
 matt-komm:
 - FastSimulation
 Martin-Grunewald:
-- Utilities
 - L1Trig
 - HLTrigger/
-- FWCore
 - EventFilter
 - Configuration
 jdolen:
