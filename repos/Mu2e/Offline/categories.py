@@ -9,29 +9,13 @@ REQUEST_BUILD_RELEASE = APPROVE_BUILD_RELEASE
 TRIGGER_PR_TESTS = list(set([] + REQUEST_BUILD_RELEASE))
 PR_HOLD_MANAGERS = [ ]
 
-COMMON_CATEGORIES = [ "L1", "tests", "code-checks" ]
+COMMON_CATEGORIES = [ "tests", "code checks" ]
 EXTERNAL_CATEGORIES = [ "externals" ]
 EXTERNAL_REPOS =  [
-                  "LArSoft/larana",
-                  "LArSoft/larcore",
-                  "LArSoft/larcorealg",
-                  "LArSoft/larcoreobj",
-                  "LArSoft/lardata",
-                  "LArSoft/lardataalg",
-                  "LArSoft/lardataobj",
-                  "LArSoft/larevt",
-                  "LArSoft/larexamples",
-                  "LArSoft/lareventdisplay",
-                  "LArSoft/larg4",
-                  "LArSoft/larpandora",
-                  "LArSoft/larsim",
-                  "LArSoft/larreco",
-                  "LArSoft/larwirecell",
-                  "LArSoft/larsoft",
-                  "LArSoft/larsoftobj",
+  "Mu2e/Offline"
                   ]
 
-EXTERNAL_REPOS.remove( gh_user+"/"+gh_repo )
+#EXTERNAL_REPOS.remove( gh_user+"/"+gh_repo )
 
 CMSSW_REPOS = [ gh_user+"/"+gh_repo ]
 CMSDIST_REPOS = [ ]
@@ -40,9 +24,9 @@ COMPARISON_MISSING_MAP = []
 
 #github_user:[list of categories]
 CMSSW_L2 = {
-  CMSBUILD_USER : ["tests", "code-checks" ],
-  'LArSoft/level-1-managers': ['L1'],
-  'LArSoft/level-2-managers': ['L2'],
+  CMSBUILD_USER : ["tests", "code checks" ],
+  'Mu2e/write': ["tests", "code checks"],
+  #'LArSoft/level-2-managers': ['L2'],
 }
 
 USERS_TO_TRIGGER_HOOKS = set(TRIGGER_PR_TESTS + CMSSW_ISSUES_TRACKERS + list(CMSSW_L2.keys()))

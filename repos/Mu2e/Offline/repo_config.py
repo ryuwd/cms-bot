@@ -28,6 +28,7 @@ GITHUB_WEBHOOK_TOKEN="""U2FsdGVkX19akbUO9GV/sfW46u9HUcJxcJtAo1oHRWOzTjeib95Ivymr
 ADD_LABELS=True
 #Set to True if you want bot to add GH webhooks. FNALbuild needs admin rights
 ADD_WEB_HOOK=True
+
 #List of issues/pr which bot should ignore
 IGNORE_ISSUES = [0]
 #Set the Jenkins slave label is your tests needs special machines to run.

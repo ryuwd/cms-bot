@@ -9,3 +9,6 @@
 #  - subsystem2/package2
 #LArSoft/Core:
 #  - larsoft
+
+Mu2e/Write:
+  - Offline
