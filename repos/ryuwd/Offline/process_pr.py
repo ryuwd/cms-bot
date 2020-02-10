@@ -513,7 +513,12 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         if name in test_triggered:
             if test_triggered[name]: # if already True, don't change it
                 continue
-        test_triggered[name] = ('running' in stat.description)
+        test_triggered[name] = ('has been triggered' in stat.description)
+
+        # some other labels, gleaned from the description (the status API
+        # doesn't support states)
+        if ('running' in stat.description):
+            test_statuses[name] = 'running'
 
     # TODO: misc label assignment
     # e.g. title contains 'bugfix' etc
@@ -528,9 +533,17 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
                 not_seen_yet = False
                 last_time_seen = comment.created_at
 
+    # we might not have commented, but e.g. changed a label instead...
+    for event in pr.get_issue_events():
+        if event.actor.login == repo_config.CMSBUILD_USER:
+            if event.created_at > last_time_seen:
+                last_time_seen = event.created_at
+
     for comment in comments:
         # Ignore all other messages which are before last commit.
-        if issue.pull_request and (comment.created_at < last_commit_date):
+        # TODO: we should handle abort messages here that come before the last commit
+
+        if (comment.created_at < last_commit_date):
             continue
 
         # neglect comments we've already responded to
@@ -543,9 +556,6 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
             continue
 
         # now look for bot triggers
-
-        # TODO: check if a comment has aborted a test
-
         # check if the comment has triggered a test
         trigger_search = check_test_cmd_mu2e(comment.body, repo.full_name)
 
@@ -591,7 +601,9 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
 
         if test in tests_to_trigger:
             print ("TEST WILL NOW BE TRIGGERED: %s" % test)
-            # trigger the test in jenkins TODO: figure this out
+            # trigger the test in jenkins
+            # TODO: write a custom function to generate jenkins properties files
+            # as appropriate
             # create_properties_file_tests(
             #         repo.full_name,
             #         prId,
@@ -607,7 +619,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
                 last_commit.create_status(
                             state="pending",
                             target_url="https://github.com/mu2e/Offline",
-                            description="The test is running in Jenkins",
+                            description="The test has been triggered in Jenkins",
                             context=test_suites.get_test_alias(test)
                         )
             print ("Git status created for SHA %s test %s - since the test has been triggered." % (git_commit.sha, test))
