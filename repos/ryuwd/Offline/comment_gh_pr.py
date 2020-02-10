@@ -30,7 +30,7 @@ def comment_gh_pr(repo, pr, msg):
     desc = lines[3]
     details_link = lines[4]
 
-    pr.get_commit(sha=test_commit_sha).create_status(
+    repo.get_commit(sha=test_commit_sha).create_status(
         state=state,
         target_url=details_link,
         description=desc,
