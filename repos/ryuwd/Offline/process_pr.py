@@ -501,10 +501,16 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     # now get commit statuses
     commit_status = last_commit.get_statuses()
 
+    commit_status_time = {}
+
     for stat in commit_status:
         name = test_suites.get_test_name(stat.context)
         if name == 'unrecognised':
             continue
+        if name in commit_status_time:
+            if commit_status_time[name] > stat.updated_at:
+                continue
+        commit_status_time[name] = stat.updated_at
 
         # error, failure, pending, success
         test_statuses[name] = stat.state
@@ -519,6 +525,8 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         # doesn't support states)
         if ('running' in stat.description):
             test_statuses[name] = 'running'
+
+        print (name, ' is %s' % test_statuses[name])
 
     # TODO: misc label assignment
     # e.g. title contains 'bugfix' etc
