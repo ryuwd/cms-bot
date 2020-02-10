@@ -29,7 +29,7 @@ from cms_static import (
 )
 from cms_static import BACKPORT_STR, GH_CMSSW_ORGANIZATION
 from repo_config import GH_REPO_ORGANIZATION, GH_CMSSW_REPO
-import re, time
+import re, time, os
 from datetime import datetime
 from os.path import join, exists
 from os import environ
@@ -83,152 +83,35 @@ FAILED_TESTS_MSG = "The tests have failed, please try again."
 PUSH_TEST_ISSUE_MSG = "^\[Jenkins CI\] Testing commit: [0-9a-f]+$"
 HOLD_MSG = "Pull request has been put on hold by "
 
-# Regexp to match the test requests
-WF_PATTERN = "[1-9][0-9]*(\.[0-9]+|)"
-CMSSW_PR_PATTERN = format(
-    "(#[0-9]+|https://+github.com/+%(cmssw_repo)s/+pull/+[0-9]+/*|)",
-    cmssw_repo=CMSSW_REPO_NAME,
-)
-CMSDIST_PR_PATTERN = format(
-    "(%(cmsdist_repo)s#[0-9]+|https://+github.com/+%(cmsdist_repo)s/+pull/+[0-9]+/*|)",
-    cmsdist_repo=CMSDIST_REPO_NAME,
-)
-CMSSW_QUEUE_PATTERN = "CMSSW_[0-9]+_[0-9]+_([A-Z][A-Z0-9]+_|)X"
-ARCH_PATTERN = "[a-z0-9]+_[a-z0-9]+_[a-z0-9]+"
-CMSSW_RELEASE_QUEUE_PATTERN = format(
-    "(%(cmssw)s|%(arch)s|%(cmssw)s/%(arch)s)",
-    cmssw=CMSSW_QUEUE_PATTERN,
-    arch=ARCH_PATTERN,
-)
-CLOSE_REQUEST = re.compile(
-    "^\s*((@|)cmsbuild\s*[,]*\s+|)(please\s*[,]*\s+|)close\s*$", re.I
-)
-TEST_REGEXP = format(
-    "^\s*((@|)cmsbuild\s*[,]*\s+|)(please\s*[,]*\s+|)test(\s+workflow(s|)\s+(%(workflow)s(\s*,\s*%(workflow)s|)*)|)(\s+with(\s+%(cmssw_pr)s(\s*,\s*%(cmssw_pr)s|)*|)(\s+%(cmsdist_pr)s|)|)(\s+for(\s+%(release_queue)s)|)\s*$",
-    workflow=WF_PATTERN,
-    cmssw_pr=CMSSW_PR_PATTERN,
-    cmsdist_pr=CMSDIST_PR_PATTERN,
-    release_queue=CMSSW_RELEASE_QUEUE_PATTERN,
-)
-
-CMS_PR_PATTERN = format(
-    "(#[1-9][0-9]*|(%(cmsorgs)s)/+[a-zA-Z0-9_-]+#[1-9][0-9]*|https://+github.com/+(%(cmsorgs)s)/+[a-zA-Z0-9_-]+/+pull/+[1-9][0-9]*)",
-    cmsorgs="|".join(EXTERNAL_REPOS),
-)
-TEST_REGEXP_NEW = format(
-    "^\s*((@|)cmsbuild\s*[,]*\s+|)(please\s*[,]*\s+|)test(\s+workflow(s|)\s+(%(workflow)s(\s*,\s*%(workflow)s|)*)|)(\s+with\s+(%(cms_pr)s(\s*,\s*%(cms_pr)s)*)|)(\s+for\s+%(release_queue)s|)\s*$",
-    workflow=WF_PATTERN,
-    cms_pr=CMS_PR_PATTERN,
-    release_queue=CMSSW_RELEASE_QUEUE_PATTERN,
-)
-
-REGEX_TEST_REG = re.compile(TEST_REGEXP, re.I)
-REGEX_TEST_REG_NEW = re.compile(TEST_REGEXP_NEW, re.I)
-REGEX_TEST_ABORT = re.compile(
-    "^\s*((@|)cmsbuild\s*[,]*\s+|)(please\s*[,]*\s+|)abort(\s+test|)$", re.I
-)
 TEST_WAIT_GAP = 720
 
 
-LARSOFT_REPOS = [
-    "larana",
-    "larbatch",
-    "larcore",
-    "larcorealg",
-    "larcoreobj",
-    "lardata",
-    "lardataalg",
-    "lardataobj",
-    "larevt",
-    "larexamples",
-    "lareventdisplay",
-    "larg4",
-    "larpandora",
-    "larpandoracontent",
-    "larsim",
-    "larreco",
-    "larutils",
-    "larwirecell",
-    "larsoft",
-    "larsoftobj",
-]
-LAR_PR_PATTERN = format(
-    "(LArSoft/+(%(repos)s)#[0-9]+|(%(repos)s)#[0-9]+|#[0-9]+|https://github.com/+[a-zA-Z0-9_-]+/+(%(repos)s)/+pull/+[0-9]+)",
-    repos="|".join(LARSOFT_REPOS),
-)
-REGEX_TEST_PRP = re.compile(LAR_PR_PATTERN, re.I)
+# Mu2e triggering statements are in 'test_suites.py'
+import test_suites
 
-TEST_REGEXP_LAR_PR = format(
-    "^\s*((@|)FNALbuild\s*[,]*\s+|)(please\s*[,]*\s+|)trigger\s+build((\s+with\s+pull\s+request[s]?\s+(%(lar_pr)s(\s*,\s*%(lar_pr)s)*))|)\s*$",
-    lar_pr=LAR_PR_PATTERN,
-)
-REGEX_TEST_REG_LAR_PR = re.compile(TEST_REGEXP_LAR_PR, re.I)
+def check_test_cmd_mu2e(full_comment, repository):
+    # we have a suite of regex statements to support triggering all kinds of tests.
+    # each item in this list matches a trigger statement in a github comment
 
-assert REGEX_TEST_REG_LAR_PR.match(r"trigger build")
-assert REGEX_TEST_REG_LAR_PR.match(r"please trigger build")
-assert REGEX_TEST_REG_LAR_PR.match(r"FNALbuild please trigger build")
-assert REGEX_TEST_REG_LAR_PR.match(r"FNALbuild, please trigger build")
-assert REGEX_TEST_REG_LAR_PR.match(r" trigger build with pull request #1")
-assert REGEX_TEST_REG_LAR_PR.match(
-    r" trigger build with pull requests #1, larg4#2, larsoft/larana#3, https://github.com/LArSoft/larcore/pull/2"
-)
+    # each 'trigger event' function should return:
+    # (testnames to run: list, master+branchPR merge result to run them on)
 
-TEST_REGEXP_LAR_BR = format(
-    "^\s*((@|)FNALbuild\s*[,]*\s+|)(please\s*[,]*\s+|)trigger\s+build(\s+using\s+branchnames?\s+(([/a-zA-Z0-9_-]+)(\s*(,(\s*[/a-zA-Z0-9_-]+)))*)\s+in\s+repo[s]?\s+((%(larrepos)s)((\s*,\s*((%(larrepos)s)))*))|)\s*$",
-    larrepos="|".join(LARSOFT_REPOS),
-)
+    # tests:
+    # desc: code checks -> mu2e/codechecks (context name) -> [jenkins project name]
+    # desc: integration build tests -> mu2e/buildtest -> [jenkins project name]
+    # desC: physics validation -> mu2e/validation -> [jenkins project name]
 
-#
+    for regex, handler in test_suites.TESTS:
+        # returns the first match in the comment
+        match = regex.search(full_comment)
+        print (regex, full_comment, match)
 
-REGEX_TEST_REG_LAR_BR = re.compile(TEST_REGEXP_LAR_BR, re.I)
-m = REGEX_TEST_REG_LAR_BR.match(
-    "trigger build using branchname gartung-patch-1 in repos  larana, larcore, larcorealg, larcoreobj, lardata, lardataalg, lardataobj, larevt, lareventdisplay, larexamples, larg4, larpandora, larsim, larreco, larwirecell"
-)
-assert m
+        if match is None:
+            continue
+        return handler(match)
 
-assert REGEX_TEST_REG_LAR_BR.match(r"trigger build")
-assert REGEX_TEST_REG_LAR_BR.match(r"please trigger build")
-assert REGEX_TEST_REG_LAR_BR.match(r"FNALbuild please trigger build")
-assert REGEX_TEST_REG_LAR_BR.match(r"FNALbuild, please trigger build")
-assert REGEX_TEST_REG_LAR_BR.match(
-    r"trigger build using branchname feature/test in repo larcore"
-)
-assert REGEX_TEST_REG_LAR_BR.search(
-    r"trigger build using branchnames feature/test,feature_test in repos larana,larcore"
-)
+    return None
 
-
-# Mu2e triggering statements
-MU2E_BOT_USER = "FNALbuild"
-
-MU2E_PR_PATTERN = "(Mu2e\/+(Offline)#[0-9]+|(Offline)#[0-9]+|#[0-9]+|https:\/\/github.com\/+[a-zA-Z0-9_-]+\/+Offline\/+pull\/+[0-9]+)"
-REGEX_TEST_PRP = re.compile(MU2E_PR_PATTERN, re.I)
-
-# all default tests
-TEST_REGEXP_MU2E_DEFTEST_TRIGGER = (
-    "(@%s)(\s*[,:;]*\s+|\s+)(please\s*[,]*\s+|)(run\s+test(s|)|test)" % MU2E_BOT_USER
-)
-REGEX_DEFTEST_MU2E_PR = re.compile(TEST_REGEXP_MU2E_DEFTEST_TRIGGER, re.I)
-
-# build test
-TEST_REGEXP_MU2E_BUILDTEST_TRIGGER = (
-    "(@%s)(\s*[,:;]*\s+|\s+)(please\s*[,]*\s+|)(run\s+(build\s*)test(s|)|(test\s+(build)))"
-    % MU2E_BOT_USER
-)
-REGEX_BUILDTEST_MU2E_PR = re.compile(TEST_REGEXP_MU2E_BUILDTEST_TRIGGER, re.I)
-
-# code test
-TEST_REGEXP_MU2E_LINTTEST_TRIGGER = (
-    "(@%s)(\s*[,:;]*\s+|\s+)(please\s*[,]*\s+|)(run\s+(code\s*)(test(s|)|check(s)|lint(er|ing))|(test\s+code|check\s+code))"
-    % MU2E_BOT_USER
-)
-REGEX_LINTTEST_MU2E_PR = re.compile(TEST_REGEXP_MU2E_LINTTEST_TRIGGER, re.I)
-
-# full physics validation
-TEST_REGEXP_MU2E_VALIDATION_TRIGGER = (
-    "(@%s)(\s*[,:;]*\s+|\s+)(please\s*[,]*\s+|)(run\s+(full\s+|)(V|v)alidation)"
-)
-REGEX_VALIDATIONTEST_MU2E_PR = re.compile(TEST_REGEXP_MU2E_VALIDATION_TRIGGER, re.I)
 
 
 def get_last_commit(pr):
@@ -583,12 +466,293 @@ def get_jenkins_job(issue):
             return test_line[-3], test_line[-2]
     return "", ""
 
-
 def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=False):
+    api_rate_limits(gh)
+
     mu2eorg = gh.get_organization("Mu2e")
     #mu2eteams = mu2eorg.get_teams()
-    mu2e_write = mu2eorg.get_team_by_slug('write')
-    mu2e_write_mems = [mem.login for mem in mu2e_write.get_members()]
+    mu2e_write = ['ryuwd']#mu2eorg.get_team_by_slug('write') TODO: remove after testing
+    mu2e_write_mems =['ryuwd']# [mem.login for mem in mu2e_write.get_members()]
+
+    if not issue.pull_request:
+        return
+
+    # users authorised to communicate with this bot
+    authorised_users = set(mu2e_write_mems)
+
+    not_seen_yet = True
+    last_time_seen = None
+
+    labels = []
+    # commit test states:
+    test_statuses = {}
+    test_triggered = {}
+    test_status_exists = {} # did we already create a commit status?
+
+    # tests we'd like to trigger on this commit
+    tests_to_trigger = []
+
+    # tests we've already triggered
+    tests_already_triggered = []
+    # top-level folders of the Offline 'monorepo'
+    # that have been edited by this PR
+    modified_top_level_folders = []
+
+    prId = issue.number
+    pr = repo.get_pull(prId)
+
+    if pr.changed_files == 0:
+        print("Ignoring: PR with no files changed")
+        return
+
+    # get PR and changed libraries / packages
+    pr_repo = gh.get_repo(repo.full_name)
+
+    pr_files = pr.get_files()
+    for f in pr_files:
+        filename, file_extension = os.path.splitext(f.filename)
+        print( "Changed file (%s): %s.%s" % (file_extension, filename, file_extension) )
+
+        splits = filename.split('/')
+        if len(splits) > 1:
+            modified_top_level_folders.append(splits[0])
+        else:
+            modified_top_level_folders.append('/')
+
+    modified_top_level_folders = set(modified_top_level_folders)
+    print ('Build Targets changed:')
+    print (
+        '\n'.join(['- %s' % s for s in modified_top_level_folders])
+    )
+
+    # TODO: print modified monorepo package folders in 'greeting' message
+    watchers = read_repo_file(repo_config, "watchers.yaml", {})
+
+    # get required tests
+    test_requirements = test_suites.get_tests_for(modified_top_level_folders)
+    print ('Tests required: ', test_requirements)
+
+    # set their status to 'pending' (will be updated shortly after)
+    for test in test_requirements:
+        test_statuses[test] = 'pending'
+        test_triggered[test] = False
+        test_status_exists[test] = False
+
+    # get latest commit
+    last_commit = pr.get_commits().reversed[0]
+    git_commit = last_commit.commit
+    if git_commit is None:
+        return
+
+    last_commit_date = git_commit.committer.date
+    print(
+        "Latest commit by ",
+        git_commit.committer.name,
+        " at ",
+        last_commit_date,
+    )
+    print("Latest commit message: ", git_commit.message.encode("ascii", "ignore"))
+    print("Latest commit sha: ", git_commit.sha)
+    print("PR update time", pr.updated_at)
+    print("Time UTC:", datetime.utcnow())
+
+    if last_commit_date > datetime.utcnow():
+        print("==== Future commit found ====")
+        if (not dryRun) and repo_config.ADD_LABELS:
+            labels = [x.name for x in issue.labels]
+            if not "future commit" in labels:
+                labels.append("future commit")
+                issue.edit(labels=labels)
+        return
+
+    # now get commit statuses
+    commit_status = last_commit.get_statuses()
+
+    for stat in commit_status:
+        name = test_suites.get_test_name(stat.context)
+        if name == 'unrecognised':
+            continue
+
+        # error, failure, pending, success
+        test_statuses[name] = stat.state
+        test_status_exists[name] = True
+
+        if name in test_triggered:
+            if test_triggered[name]: # if already True, don't change it
+                continue
+        test_triggered[name] = ('running' in stat.description)
+
+    # TODO: misc label assignment
+    # e.g. title contains 'bugfix' etc
+
+
+    # now process PR comments.
+    pr_author = issue.user.login
+    comments = issue.get_comments()
+    for comment in comments: # loop through once to ascertain when the bot last commented
+        if comment.user.login == repo_config.CMSBUILD_USER:
+            if 'You have proposed changes to files in these packages' in comment.body or 'The following tests have been triggered for ref' in comment.body:
+                not_seen_yet = False
+                last_time_seen = comment.created_at
+
+    for comment in comments:
+        # Ignore all other messages which are before last commit.
+        if issue.pull_request and (comment.created_at < last_commit_date):
+            continue
+
+        # neglect comments by un-authorised users
+        if not comment.user.login in authorised_users:
+            continue
+
+        # neglect comments we've already responded to
+        if not (comment.created_at > last_time_seen):
+            continue
+
+        # now look for bot triggers
+
+        # TODO: check if tests are running on previous commits!
+
+        # TODO: check if a comment has aborted a test
+
+        # check if the comment has triggered a test
+        trigger_search = check_test_cmd_mu2e(comment.body, repo.full_name)
+
+        tests_already_triggered = []
+
+        if trigger_search is not None:
+            tests, run_with = trigger_search
+
+            print ("Triggered! Comment: %s" % comment.body)
+            print ('current test(s) to trigger: %r' % tests_to_trigger)
+            print ('add test(s) to trigger: %r' % tests )
+
+            for test in tests:
+                # check that the test has been triggered on this commit first
+                if test in test_triggered: # has the test been added?
+                    if test_triggered[test]:
+                        print ("The test has already been triggered for this ref. It will not be triggered again.")
+                        tests_already_triggered.append(test)
+                        continue
+                else:
+                    test_triggered[test] = False
+
+                if not test_triggered[test]: # is the test already running?
+                    # ok - now we can trigger the test
+                    print ("The test has not been triggered yet. It will now be triggered.")
+
+                    # update the 'state' of this commit
+                    test_statuses[test] = 'pending'
+                    test_triggered[test] = True
+
+                    # add the test to the queue of tests to trigger
+                    tests_to_trigger.append(test)
+
+
+    # now,
+    # - apply labels according to the state of the latest commit of the PR
+    # - trigger tests if indicated (for this specific SHA.)
+    # - set the current status for this commit SHA
+    # - make a comment if required
+
+    for test, state in test_statuses.items():
+        labels.append('%s %s' % (test, state))
+
+        if test in tests_to_trigger:
+            print ("TEST WILL NOW BE TRIGGERED: %s" % test)
+            # trigger the test in jenkins TODO: figure this out
+            # create_properties_file_tests(
+            #         repo.full_name,
+            #         prId,
+            #         '',
+            #         '',
+            #         dryRun,
+            #         abort=False,
+            #         repo_config=repo_config,
+            #         extra_prop=extra_prop,
+            #         new_tests=new_tests,
+            #     )
+            if not dryRun:
+                last_commit.create_status(
+                            state="pending",
+                            target_url="https://github.com/mu2e/Offline",
+                            description="The test is running in Jenkins",
+                            context=test_suites.get_test_alias(test)
+                        )
+            print ("Git status created for SHA %s test %s - since the test has been triggered." % (git_commit.sha, test))
+        elif state == 'pending' and test_status_exists[test]:
+            print ("Git status unchanged for SHA %s test %s - the existing one is up-to-date." % (git_commit.sha, test))
+
+        elif state == 'pending' and not test_triggered[test] and not test_status_exists[test]:
+            print (test_status_exists)
+            print ("Git status created for SHA %s test %s - since there wasn't one already." % (git_commit.sha, test))
+            # indicate that the test is pending but
+            # we're still waiting for someone to trigger the test
+            if not dryRun:
+                last_commit.create_status(
+                            state="pending",
+                            target_url="https://github.com/mu2e/Offline",
+                            description="This test has not been triggered yet.",
+                            context=test_suites.get_test_alias(test)
+                        )
+                if not not_seen_yet:
+                    fresh_commit = True
+
+        # don't do anything else with commit statuses
+        # the script handler that handles Jenkins job results will update the commits accordingly
+
+    salutation = """Hi @{pr_author},
+You have proposed changes to files in these packages:
+{changed_folders}
+
+which require these tests: {tests_required}.
+
+{watchers}
+{tests_triggered_msg}
+
+<a href="https://mu2ewiki.fnal.gov/wiki/Jenkins">cms-bot/mu2e commands are explained here</a>
+"""
+
+    commitlink = 'https://github.com/%s/pull/%s/commits/%s' % (repo.full_name, prId, git_commit.sha)
+    tests_triggered_msg = ''
+    already_running_msg = ''
+    if len(tests_to_trigger) > 0:
+        if len(tests_already_triggered) > 0:
+            already_running_msg = '(already triggered: %s)' % ','.join(tests_already_triggered)
+        tests_triggered_msg = """The following tests have been triggered for ref %s: %s %s""" % (commitlink, ', '.join(tests_to_trigger), already_running_msg)
+
+    # check if labels have changed
+    for l in labels:
+        if l not in issue.labels:
+            if not dryRun:
+                issue.edit(labels=labels)
+            print ("labels have changed to: ", labels)
+            break
+
+    if not_seen_yet:
+        print ("First time seeing this PR - send the user a salutation!")
+        if not dryRun:
+            issue.create_comment(salutation.format(
+                pr_author=pr_author,
+                changed_folders='\n'.join(['- %s' % s for s in modified_top_level_folders]),
+                tests_required=', '.join(test_requirements),
+                watchers='',
+                tests_triggered_msg=tests_triggered_msg
+            ))
+
+    elif len(tests_to_trigger) > 0:
+        if not dryRun:
+            issue.create_comment(tests_triggered_msg)
+    elif len(tests_to_trigger) == 0 and len(tests_already_triggered) > 0:
+        if not dryRun:
+            issue.create_comment("""Those tests are already run or are running for ref %s! (%s)""" % (commitlink, ', '.join(tests_already_triggered))
+)
+
+
+def oldprocess_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=False):
+    mu2eorg = gh.get_organization("Mu2e")
+    #mu2eteams = mu2eorg.get_teams()
+    mu2e_write = ['ryuwd']#mu2eorg.get_team_by_slug('write') TODO: remove after testing
+    mu2e_write_mems =['ryuwd']# [mem.login for mem in mu2e_write.get_members()]
 
     # TODO: FIXME!
     larsoft_l1_mems = []
@@ -620,6 +784,8 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     prId = issue.number
     repository = repo.full_name
     repo_org, repo_name = repository.split("/", 1)
+
+    pr_repo = gh.get_repo(repository)
 
 
     new_tests = True
@@ -1004,12 +1170,13 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         print("  DEBUG: Processing as newer than commit time.")
         # check if someone wanted to trigger code checks at any point after the last commit,
         # then check that we didn't already handle that comment (next block!)
-        if re.match(REGEX_LINTTEST_MU2E_PR, comment_msg) and cmssw_repo:
-            signatures["code checks"] = "pending"
-            trigger_code_checks = True
-            triggerred_code_checks = False
-            print("Found: Code Checks trigger!")
-            continue
+
+        # if re.match(REGEX_LINTTEST_MU2E_PR, comment_msg) and cmssw_repo:
+        #     signatures["code checks"] = "pending"
+        #     trigger_code_checks = True
+        #     triggerred_code_checks = False
+        #     print("Found: Code Checks trigger!")
+        #     continue
 
         # Check for cmsbuild_user comments and tests requests only for pull requests
         if commenter == cmsbuild_user:
@@ -1119,38 +1286,22 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
 
             # Check if the someone asked to trigger the tests
             if valid_commenter:
-                test_cmd_func = check_test_cmd
-                if new_tests:
-                    test_cmd_func = check_test_cmd_lar
+                trigger_search = check_test_cmd_mu2e(comment_msg, repository)
 
-
-                ok, v1, v2, v3, v4 = test_cmd_func(first_line, repository)
-                if ok:
-                    cmsdist_pr = v1
-                    cmssw_prs = v2
-                    extra_wfs = v3
-                    release_queue = v4
+                if trigger_search is not None:
+                    # a test is to be triggered
+                    cmsdist_pr = ""
+                    cmssw_prs = ""
+                    extra_wfs = ""
+                    release_queue = ""
                     release_arch = ""
-                    if "/" in release_queue:
-                        release_queue, release_arch = release_queue.split("/", 1)
-                    elif re.match("^" + ARCH_PATTERN + "$", release_queue):
-                        release_arch = release_queue
-                        release_queue = ""
-                    print(
-                        "Tests requested:",
-                        commenter,
-                        "asked to test this PR with cmsdist_pr=%s, cmssw_prs=%s, release_queue=%s, arch=%s and workflows=%s"
-                        % (
-                            cmsdist_pr,
-                            cmssw_prs,
-                            release_queue,
-                            release_arch,
-                            extra_wfs,
-                        ),
-                    )
 
-                    print("Comment message:", first_line)
+                    print(
+                        "Tests requested by %s: %r" % commenter, trigger_search[0]
+                    )
+                    print("Comment message:", comment_msg)
                     trigger_test_on_signature = False
+
                     if tests_already_queued:
                         print(
                             "Test results not obtained in ",
@@ -1159,9 +1310,11 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
                         diff = time.mktime(
                             comment.created_at.timetuple()
                         ) - time.mktime(last_test_start_time.timetuple())
+
                         if diff >= TEST_WAIT_GAP:
                             print("Looks like tests are stuck, will try to re-queue")
                             tests_already_queued = False
+
                     if not tests_already_queued:
                         print("cms-bot will request test for this PR")
                         tests_requested = True
@@ -1291,7 +1444,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
                 dryRun = True
                 break
 
-    old_labels = set([x.name.encode("ascii", "ignore") for x in issue.labels])
+    old_labels = set([x.name for x in issue.labels])
     print("Stats:", backport_pr_num, extra_labels)
     print("Old Labels:", sorted(old_labels))
     print("Compilation Warnings: ", comp_warnings)
@@ -1332,11 +1485,6 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         if add_labels:
             issue.edit(labels=list(labels))
 
-    # Check if it needs to be automatically closed.
-    # if mustClose == True and issue.state == "open":
-    #     print("This pull request must be closed.")
-        # if not dryRunOrig:
-        #     issue.edit(state="closed")
     # if not issue.pull_request:
     #     issueMessage = None
     #     if not already_seen:
@@ -1375,8 +1523,6 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
 
     if create_test_property:
         # trigger the tests and inform it in the thread.
-        if trigger_test_on_signature and has_categories_approval:
-            tests_requested = True
         if tests_requested:
             prs = ["%s#%s" % (repository, prId)]
             for p in [x for x in cmsdist_pr.replace(" ", "").split(",") if x]:
@@ -1406,7 +1552,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
                 if not dryRun:
                     pr_issue.create_comment(TRIGERING_TESTS_MSG + ex_msg)
 
-                    last_commit.create_status(
+                    pr_repo.get_commit(sha=last_commit.sha).create_status(
                         state="pending",
                         target_url="https://github.com/mu2e/Offline",
                         description="build tests are running",
@@ -1443,7 +1589,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
                 )
         elif abort_test:
             if not dryRun:
-                last_commit.create_status(
+                pr_repo.create_status(
                         state="error",
                         target_url="https://github.com/mu2e/Offline",
                         description="build tests were aborted",
@@ -1556,14 +1702,15 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     #if commentMsg and not dryRun:
     #    issue.create_comment(commentMsg)
 
+
     print("Code Checks:", trigger_code_checks, triggerred_code_checks)
     if trigger_code_checks and not triggerred_code_checks:
         if not dryRunOrig:
-            #issue.create_comment(TRIGERING_CODE_CHECK_MSG)
-            last_commit.create_status(
+            issue.create_comment(TRIGERING_CODE_CHECK_MSG)
+            commit_to_test.create_status(
                         state="pending",
                         target_url="https://github.com/mu2e/Offline",
-                        description="code checks are running",
+                        description="code checks are running in Jenkins",
                         context="mu2e/codecheck"
                     )
         else:

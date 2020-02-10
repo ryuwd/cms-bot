@@ -1,8 +1,8 @@
 from os.path import basename,dirname,abspath
-GH_CMSSW_ORGANIZATION="Mu2e"
+GH_CMSSW_ORGANIZATION="ryuwd"
 GH_CMSSW_REPO="Offline"
 
-CMSBUILD_GH_USER="FNALbuild"
+CMSBUILD_GH_USER="ryuwd"
 
 #This is overridden by GITHUBTOKEN env var
 GH_TOKEN="~/.github-token-FNALbuild"
@@ -12,9 +12,9 @@ GH_TOKEN_READONLY="~/.github-token-readonly"
 CONFIG_DIR=dirname(abspath(__file__))
 
 #GH bot user: Use default FNALbuild
-CMSBUILD_USER="FNALbuild"
+CMSBUILD_USER="ryuwd"
 GH_REPO_ORGANIZATION=basename(dirname(CONFIG_DIR))
-GH_REPO_FULLNAME="Mu2e/Offline"
+GH_REPO_FULLNAME="ryuwd/Offline"
 CREATE_EXTERNAL_ISSUE=False
 
 #Jenkins CI server: User default http://cmsjenkins05.cern.ch:8080/cms-jenkins
