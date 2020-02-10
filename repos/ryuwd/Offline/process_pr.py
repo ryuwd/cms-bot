@@ -95,8 +95,8 @@ which require these tests: {tests_required}.
 <a href="https://mu2ewiki.fnal.gov/wiki/Jenkins">cms-bot/mu2e commands are explained here</a>
 """
 
-TESTS_TRIGGERED_CONFIRMATION = """The following tests have been triggered for ref {commit_link}: {test_list} {tests_already_running_msg}"""
-TESTS_ALREADY_TRIGGERED = """Those tests are already run or are running for ref {commit_link} ({triggered_tests})"""
+TESTS_TRIGGERED_CONFIRMATION = """:hourglass: The following tests have been triggered for ref {commit_link}: {test_list} {tests_already_running_msg}"""
+TESTS_ALREADY_TRIGGERED = """:x: Those tests have already run or are running for ref {commit_link} ({triggered_tests})"""
 
 TEST_WAIT_GAP = 720
 
@@ -642,6 +642,14 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     labelnames =  [x.name for x in issue.labels]
     for l in labels:
         if l not in labelnames:
+            if not dryRun:
+                issue.edit(labels=labels)
+            print ("labels have changed to: ", labels)
+            break
+
+    # check if we have any lingering labels!
+    for l in labelnames:
+        if l not in labels:
             if not dryRun:
                 issue.edit(labels=labels)
             print ("labels have changed to: ", labels)
