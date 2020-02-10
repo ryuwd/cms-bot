@@ -98,7 +98,7 @@ def doCmd(cmd, dryRun=False, inDir=None):
   return (ret,outX)
 
 def getIBReleaseInfo(rel):
-  m = re.match("^CMSSW_(\d+_\d+(_[A-Z0-9]+|))_X(_[A-Z]+|)_(\d\d\d\d-\d\d-\d\d-(\d\d)\d\d)",rel)
+  m = re.match("^CMSSW_(\d+_\d+(_[A-Z][A-Za-z0-9]+|))_X(_[A-Z]+|)_(\d\d\d\d-\d\d-\d\d-(\d\d)\d\d)",rel)
   if not m: return ("","","")
   rc = m.group(1).replace("_",".")
   from datetime import datetime
@@ -131,3 +131,14 @@ def get_config_map_properties(filters=None):
           break
     if not skip: specs.append(entry)
   return specs
+
+def percentile(percentage, data, dlen):
+  R=(dlen+1)*percentage/100.0
+  IR=int(R)
+  if IR>=dlen: return data[-1]
+  elif IR==0: return data[0]
+  FR=int((R-IR)*100)
+  res = data[IR-1]
+  if FR>0: res=(FR/100.0)*(data[IR]-res)+res
+  return res
+
