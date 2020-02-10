@@ -20,7 +20,7 @@ Instructions on having your repos tested on the Fermilab Jenkins CI infrastructu
   - If you have `-` in your github user or repository name then replace it with `_`
 - It is better to copy an existing configuration and change it accordingly e.g. copy `repos/LArSoft/larsoft` into `repos/(your github user or organization)/(your repo name)` and make changes to reflect your repositories.
 - Add these repository directories with 'git add' and create a pull request to have them added to the master branch.
-- Allow `@FNALbot` to update your repository
+- Allow `@FNALbuild` to update your repository
   - If you have a github organization then please add github user `@FNALbuild` into a team with write (or admin) rights
   - If it is not an organization then please add `@FNALbuild` as Collaborators (under the Settings of your repository).
 - Add github webhook so that bot can get notifications.
