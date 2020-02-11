@@ -9,7 +9,7 @@ REQUEST_BUILD_RELEASE = APPROVE_BUILD_RELEASE
 TRIGGER_PR_TESTS = list(set([] + REQUEST_BUILD_RELEASE))
 PR_HOLD_MANAGERS = [ ]
 
-COMMON_CATEGORIES = [ "L1", "tests", "code-checks" ]
+COMMON_CATEGORIES = [ "L1", "code-checks" ]
 EXTERNAL_CATEGORIES = [ "externals" ]
 EXTERNAL_REPOS =  [
                   "LArSoft/larana",
