@@ -415,7 +415,6 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
 
     not_seen_yet = True
     last_time_seen = None
-
     labels = []
     # commit test states:
     test_statuses = {}
@@ -461,6 +460,8 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     # TODO: print modified monorepo package folders in 'greeting' message
     watchers = read_repo_file(repo_config, "watchers.yaml", {})
 
+    print ('watchers:', watchers )
+
     # get required tests
     test_requirements = test_suites.get_tests_for(modified_top_level_folders)
     print ('Tests required: ', test_requirements)
@@ -501,6 +502,13 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     # now get commit statuses
     commit_status = last_commit.get_statuses()
 
+    # we can translate git commit status API 'states' strings if needed.
+    state_labels = {
+        'error': 'error',
+        'failure': 'failed',
+        'success': 'succeeded',
+    }
+
     commit_status_time = {}
 
     for stat in commit_status:
@@ -514,6 +522,8 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
 
         # error, failure, pending, success
         test_statuses[name] = stat.state
+        if stat.state in state_labels:
+            test_statuses[name] = state_labels[stat.state]
         test_status_exists[name] = True
 
         if name in test_triggered:
@@ -525,8 +535,6 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         # doesn't support states)
         if ('running' in stat.description):
             test_statuses[name] = 'running'
-
-        print (name, ' is %s' % test_statuses[name])
 
     # TODO: misc label assignment
     # e.g. title contains 'bugfix' etc
@@ -646,7 +654,6 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
                             description="This test has not been triggered yet.",
                             context=test_suites.get_test_alias(test)
                         )
-
         # don't do anything else with commit statuses
         # the script handler that handles Jenkins job results will update the commits accordingly
 
