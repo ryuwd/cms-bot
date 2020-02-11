@@ -63,25 +63,9 @@ try:
 except:
     COMMENT_CONVERSION = {}
 setdefaulttimeout(300)
+
 CMSDIST_REPO_NAME = join(GH_REPO_ORGANIZATION, GH_CMSDIST_REPO)
 CMSSW_REPO_NAME = join(GH_REPO_ORGANIZATION, GH_CMSSW_REPO)
-
-# Prepare various comments regardless of whether they will be made or not.
-def format(s, **kwds):
-    return s % kwds
-
-
-TRIGERING_TESTS_ABORT_MSG = "Jenkins tests have been aborted."
-TRIGERING_TESTS_MSG = "The tests have been triggered in Jenkins."
-TRIGERING_TESTS_MSG1 = "Jenkins tests have begun for "
-TRIGERING_CODE_CHECK_MSG = "The code checks are being triggered in Jenkins."
-TRIGERING_STYLE_TEST_MSG = "The project style tests are being triggered in Jenkins."
-
-IGNORING_TESTS_MSG = "Ignoring test request."
-TESTS_RESULTS_MSG = "^\s*([-|+]1|I had the issue.*)\s*$"
-FAILED_TESTS_MSG = "The tests have failed, please try again."
-PUSH_TEST_ISSUE_MSG = "^\[Jenkins CI\] Testing commit: [0-9a-f]+$"
-HOLD_MSG = "Pull request has been put on hold by "
 
 PR_SALUTATION =  """Hi @{pr_author},
 You have proposed changes to files in these packages:
@@ -128,7 +112,6 @@ def check_test_cmd_mu2e(full_comment, repository):
     return None
 
 
-
 def get_last_commit(pr):
     last_commit = None
     try:
@@ -155,7 +138,6 @@ def read_repo_file(repo_config, repo_file, default=None):
         if not contents:
             contents = default
     return contents
-
 
 #
 # creates a properties file to trigger the test of the pull request
@@ -245,159 +227,6 @@ def updateMilestone(repo, issue, pr, dryRun):
         return
     issue.edit(milestone=milestone)
 
-
-def find_last_comment(issue, user, match):
-    last_comment = None
-    for comment in issue.get_comments():
-        if (user != comment.user.login) or (not comment.body):
-            continue
-        if not re.match(
-            match, comment.body.encode("ascii", "ignore").strip("\n\t\r "), re.MULTILINE
-        ):
-            continue
-        last_comment = comment
-        print(
-            "Matched comment from ",
-            comment.user.login + " with comment id ",
-            comment.id,
-        )
-    return last_comment
-
-
-def modify_comment(comment, match, replace, dryRun):
-    comment_msg = comment.body.encode("ascii", "ignore") if comment.body else ""
-    if match:
-        new_comment_msg = re.sub(match, replace, comment_msg)
-    else:
-        new_comment_msg = comment_msg + "\n" + replace
-    if new_comment_msg != comment_msg:
-        if not dryRun:
-            comment.edit(new_comment_msg)
-            print("Message updated")
-    return 0
-
-
-def get_assign_categories(line):
-    m = re.match(
-        "^\s*(New categories assigned:\s*|unassign\s+|assign\s+)([a-z0-9,\s]+)\s*$",
-        line,
-        re.I,
-    )
-    if m:
-        assgin_type = m.group(1).lower()
-        new_cats = []
-        for ex_cat in m.group(2).replace(" ", "").split(","):
-            if not ex_cat in CMSSW_CATEGORIES:
-                continue
-            new_cats.append(ex_cat)
-        return (assgin_type.strip(), new_cats)
-    return ("", [])
-
-
-def ignore_issue(repo_config, repo, issue):
-    if issue.number in repo_config.IGNORE_ISSUES:
-        return True
-    if (repo.full_name in repo_config.IGNORE_ISSUES) and (
-        issue.number in repo_config.IGNORE_ISSUES[repo.full_name]
-    ):
-        return True
-    if re.match(BUILD_REL, issue.title):
-        return True
-    if issue.body:
-        if re.match(
-            CMSBOT_IGNORE_MSG,
-            issue.body.split("\n", 1)[0].strip(),
-            re.I,
-        ):
-            return True
-    return False
-
-
-def check_extra_labels(first_line, extra_labels):
-    if "bug" in first_line:
-        extra_labels["type"] = ["bug fix"]
-    elif "feature" in first_line:
-        extra_labels["type"] = ["feature"]
-    elif "urgent" in first_line:
-        extra_labels["urgent"] = ["urgent"]
-
-def check_ignore_test(first_line):
-    return first_line.split(" ", 1)[-1].replace(" ", "").split(",")
-
-
-def check_enable_test(first_line):
-    return first_line.split(" ", 1)[-1].replace(" ", "").split(",")
-
-
-def get_test_prs(test_command):
-    prs = []
-    for x in [i.strip() for i in test_command.split(",") if i]:
-        if "#" in x:
-            x = x.split("#")[-1]
-        elif "/pull/" in x:
-            x = x.split("/pull/")[-1].strip("/")
-        if not x in prs:
-            prs.append(x)
-    return ",".join(prs)
-
-
-def check_test_cmd(first_line, repo):
-    m = REGEX_TEST_REG.match(first_line)
-    if m:
-        wfs = ""
-        cmssw_prs = ""
-        cmsdist_pr = ""
-        cmssw_que = ""
-        print(m.groups())
-        if m.group(6):
-            wfs = ",".join(set(m.group(6).replace(" ", "").split(",")))
-        if m.group(11):
-            cmssw_prs = get_test_prs(m.group(11))
-        if m.group(16):
-            cmsdist_pr = get_test_prs(m.group(16))
-        if m.group(19):
-            cmssw_que = m.group(19)
-        return (True, cmsdist_pr, cmssw_prs, wfs, cmssw_que)
-    return (False, "", "", "", "")
-
-def get_changed_files(repo, pr, use_gh_patch=False):
-    if (not use_gh_patch) and (pr.changed_files <= 300):
-        return [f.filename for f in pr.get_files()]
-    cmd = (
-        "curl -s -L https://patch-diff.githubusercontent.com/raw/%s/pull/%s.patch | grep '^diff --git ' | sed 's|.* a/||;s|  *b/.*||' | sort | uniq"
-        % (repo.full_name, pr.number)
-    )
-    e, o = run_cmd(cmd)
-    if e:
-        return []
-    return o.split("\n")
-
-
-def get_backported_pr(msg):
-    if BACKPORT_STR in msg:
-        bp_num = msg.split(BACKPORT_STR, 1)[-1].split("\n", 1)[0].strip()
-        if re.match("^[1-9][0-9]*$", bp_num):
-            return bp_num
-    return ""
-
-
-def cmssw_file2Package(repo_config, filename):
-    try:
-        return repo_config.file2Package(filename)
-    except:
-        return "/".join(filename.split("/", 2)[0:2])
-
-
-def get_jenkins_job(issue):
-    test_line = ""
-    for line in [l.strip() for l in issue.body.encode("ascii", "ignore").split("\n")]:
-        if line.startswith("Build logs are available at:"):
-            test_line = line
-    if test_line:
-        test_line = test_line.split("Build logs are available at: ", 1)[-1].split("/")
-        if test_line[-4] == "job" and test_line[-1] == "console":
-            return test_line[-3], test_line[-2]
-    return "", ""
 
 def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=False):
     api_rate_limits(gh)
@@ -500,9 +329,11 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         return
 
     # now get commit statuses
+    # this is how we figure out the current state of tests
+    # on the latest commit of the PR.
     commit_status = last_commit.get_statuses()
 
-    # we can translate git commit status API 'states' strings if needed.
+    # we can translate git commit status API 'state' strings if needed.
     state_labels = {
         'error': 'error',
         'failure': 'failed',
@@ -536,14 +367,14 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         if ('running' in stat.description):
             test_statuses[name] = 'running'
 
-    # TODO: misc label assignment
-    # e.g. title contains 'bugfix' etc
 
 
-    # now process PR comments.
+    # now process PR comments that come after when
+    # the bot last did something, first figuring out when the bot last commented
     pr_author = issue.user.login
     comments = issue.get_comments()
-    for comment in comments: # loop through once to ascertain when the bot last commented
+    for comment in comments:
+        # loop through once to ascertain when the bot last commented
         if comment.user.login == repo_config.CMSBUILD_USER:
             if 'Those tests are still running' in comment.body or 'You have proposed changes to files in these packages' in comment.body or 'The following tests have been triggered for ref' in comment.body:
                 not_seen_yet = False
@@ -555,6 +386,8 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
             if event.created_at > last_time_seen:
                 last_time_seen = event.created_at
 
+
+    # now we process comments
     for comment in comments:
         # Ignore all other messages which are before last commit.
         # TODO: we should handle abort messages here that come before the last commit
@@ -574,12 +407,10 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         # now look for bot triggers
         # check if the comment has triggered a test
         trigger_search = check_test_cmd_mu2e(comment.body, repo.full_name)
-
         tests_already_triggered = []
 
         if trigger_search is not None:
             tests, run_with = trigger_search
-
             print ("Triggered! Comment: %s" % comment.body)
             print ('current test(s) to trigger: %r' % tests_to_trigger)
             print ('add test(s) to trigger: %r' % tests )
