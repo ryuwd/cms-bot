@@ -268,8 +268,8 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
 
     # get PR and changed libraries / packages
     pr_repo = gh.get_repo(repo.full_name)
-
     pr_files = pr.get_files()
+
     for f in pr_files:
         filename, file_extension = os.path.splitext(f.filename)
         print( "Changed file (%s): %s.%s" % (file_extension, filename, file_extension) )
