@@ -153,6 +153,7 @@ def create_properties_file_tests(
     repo_config=None,
     extra_prop=None,
     new_tests=True,
+    head_sha='',
 ):
     if abort:
         req_type = "abort"
@@ -170,6 +171,7 @@ def create_properties_file_tests(
     parameters = {}
     parameters["REPOSITORY"] = repository
     parameters["PULL_REQUEST"] = pr_number
+    parameters["COMMIT_SHA"] = head_sha
     if extra_prop:
         for x in extra_prop:
             parameters[x] = extra_prop[x]
@@ -449,19 +451,20 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         if test in tests_to_trigger:
             print ("TEST WILL NOW BE TRIGGERED: %s" % test)
             # trigger the test in jenkins
-            # TODO: write a custom function to generate jenkins properties files
-            # as appropriate
-            # create_properties_file_tests(
-            #         repo.full_name,
-            #         prId,
-            #         '',
-            #         '',
-            #         dryRun,
-            #         abort=False,
-            #         repo_config=repo_config,
-            #         extra_prop=extra_prop,
-            #         new_tests=new_tests,
-            #     )
+            # TODO: figure out how these properties files will trigger
+            # the mu2e Jenkins jobs
+            create_properties_file_tests(
+                    repo.full_name,
+                    prId,
+                    '',
+                    '',
+                    dryRun,
+                    req_type='mu2e-' + test.replace(' ','-'),
+                    abort=False,
+                    repo_config=repo_config,
+                    new_tests=True,
+                    head_sha=git_commit.sha
+                )
             if not dryRun:
                 last_commit.create_status(
                             state="pending",
