@@ -385,7 +385,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     # we might not have commented, but e.g. changed a label instead...
     for event in pr.get_issue_events():
         if event.actor.login == repo_config.CMSBUILD_USER and event.event in ['labeled', 'unlabeled']:
-            if event.created_at > last_time_seen:
+            if last_time_seen is None or event.created_at > last_time_seen:
                 last_time_seen = event.created_at
                 print (last_time_seen, event)
     print ("Last time seen", last_time_seen)
