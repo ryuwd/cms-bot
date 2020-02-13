@@ -105,7 +105,10 @@ def check_test_cmd_mu2e(full_comment, repository):
         match = regex.search(full_comment)
         if match is None:
             continue
-        return handler(match)
+        handle = handler(match)
+        if handle is None:
+            continue
+        return handle
 
     return None
 

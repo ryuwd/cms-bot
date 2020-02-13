@@ -64,7 +64,7 @@ def process_custom_test_request(matched_re):
     testlist = [x.strip() for x in matched_re.group(5).split(',') if x.strip().lower() in SUPPORTED_TESTS]
     print ('tests requested:')
     if len(testlist) == 0:
-        testlist = DEFAULT_TESTS
+        return None
     return [testlist, 'current']
 
 def get_tests_for(monorepo_packages):
@@ -75,7 +75,7 @@ def get_tests_for(monorepo_packages):
     return DEFAULT_TESTS
 
 TESTS  = [
-    [REGEX_CUSTOM_TEST_MU2E_PR, process_custom_test_request],
+    #[REGEX_CUSTOM_TEST_MU2E_PR, process_custom_test_request],
     [REGEX_BUILDTEST_MU2E_PR, lambda matchre: (['build'], 'current')],
     [REGEX_LINTTEST_MU2E_PR, lambda matchre: (['code checks'], 'current')],
     [REGEX_VALIDATIONTEST_MU2E_PR, lambda matchre: (['validation'], 'current')],
