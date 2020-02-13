@@ -274,6 +274,10 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     # get PR and changed libraries / packages
     pr_repo = gh.get_repo(repo.full_name)
     pr_files = pr.get_files()
+    
+    # this will be the commit of master that the PR is merged
+    # into for the CI tests (for a buildtest this is just the HEAD.
+    master_commit_sha = repo.get_branch("master").commit
 
     for f in pr_files:
         filename, file_extension = os.path.splitext(f.filename)
@@ -370,6 +374,10 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         # doesn't support states)
         if ('running' in stat.description):
             test_statuses[name] = 'running'
+        
+        if (stat.context == 'mu2e/buildtest' and stat.description.startswith(':')):
+            # this is the commit SHA in master that we merged into
+            master_commit_sha = stat.description.replace(':','')
 
 
 
@@ -452,8 +460,6 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     # - set the current status for this commit SHA
     # - make a comment if required
     
-    master_commit_sha = repo.get_branch("master").commit
-
     for test, state in test_statuses.items():
         labels.append('%s %s' % (test, state))
 
@@ -476,6 +482,18 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
                     master_sha=master_commit_sha,
                 )
             if not dryRun:
+                if test == 'build':
+                    # we need to store somewhere the master commit SHA 
+                    # that we merge into for the build test (for validation)
+                    # this is overlapped with the next, more human readable message
+                    # below - but we will still be able to access this status.
+                    last_commit.create_status(
+                            state="pending",
+                            target_url="https://github.com/mu2e/Offline",
+                            description=":%s" % master_commit_sha,
+                            context=test_suites.get_test_alias(test)
+                    )
+
                 last_commit.create_status(
                             state="pending",
                             target_url="https://github.com/mu2e/Offline",
