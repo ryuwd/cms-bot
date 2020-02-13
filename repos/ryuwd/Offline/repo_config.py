@@ -2,7 +2,6 @@ from os.path import basename,dirname,abspath
 GH_CMSSW_ORGANIZATION="ryuwd"
 GH_CMSSW_REPO="Offline"
 
-
 #This is overridden by GITHUBTOKEN env var
 GH_TOKEN="~/.github-token-FNALbuild"
 #This is overridden by GITHUBTOKEN env var
@@ -13,7 +12,6 @@ CONFIG_DIR=dirname(abspath(__file__))
 #GH bot user: Use default FNALbuild
 CMSBUILD_GH_USER="FNALbuild"
 CMSBUILD_USER = CMSBUILD_GH_USER
-
 
 GH_REPO_ORGANIZATION=basename(dirname(CONFIG_DIR))
 GH_REPO_FULLNAME="ryuwd/Offline"
