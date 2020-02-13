@@ -76,6 +76,6 @@ TESTS  = [
     [REGEX_CUSTOM_TEST_MU2E_PR, process_custom_test_request],
     [REGEX_BUILDTEST_MU2E_PR, lambda matchre: (['build'], 'current')],
     [REGEX_LINTTEST_MU2E_PR, lambda matchre: (['code checks'], 'current')],
-    [REGEX_VALIDATIONTEST_MU2E_PR, lambda matchre: (['validation'], 'current')]
+    [REGEX_VALIDATIONTEST_MU2E_PR, lambda matchre: (['validation'], 'current')],
     [REGEX_DEFTEST_MU2E_PR, lambda matchre: (DEFAULT_TESTS, 'current')],
 ]
