@@ -378,9 +378,8 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     for comment in comments:
         # loop through once to ascertain when the bot last commented
         if comment.user.login == repo_config.CMSBUILD_USER:
-            if 'Those tests are still running' in comment.body or 'You have proposed changes to files in these packages' in comment.body or 'The following tests have been triggered for ref' in comment.body:
-                not_seen_yet = False
-                last_time_seen = comment.created_at
+            not_seen_yet = False
+            last_time_seen = comment.created_at
 
     # we might not have commented, but e.g. changed a label instead...
     for event in pr.get_issue_events():
