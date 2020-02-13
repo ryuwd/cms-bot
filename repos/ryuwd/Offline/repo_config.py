@@ -10,8 +10,9 @@ GH_TOKEN_READONLY="~/.github-token-readonly"
 CONFIG_DIR=dirname(abspath(__file__))
 
 #GH bot user: Use default FNALbuild
-CMSBUILD_GH_USER="FNALbuild"
-CMSBUILD_USER = CMSBUILD_GH_USER
+
+CMSBUILD_USER="FNALbuild"
+CMSBUILD_GH_USER = CMSBUILD_USER
 
 GH_REPO_ORGANIZATION=basename(dirname(CONFIG_DIR))
 GH_REPO_FULLNAME="ryuwd/Offline"
