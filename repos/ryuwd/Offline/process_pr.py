@@ -363,8 +363,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         if name in test_triggered:
             if test_triggered[name]: # if already True, don't change it
                 continue
-        test_triggered[name] = ('has been triggered' in stat.description)
-
+        test_triggered[name] = ('has been triggered' in stat.description) or (stat.state == 'success' or stat.state == 'failure')
         # some other labels, gleaned from the description (the status API
         # doesn't support states)
         if ('running' in stat.description):
