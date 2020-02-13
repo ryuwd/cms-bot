@@ -63,6 +63,8 @@ def get_test_alias(test):
 def process_custom_test_request(matched_re):
     testlist = [x.strip() for x in matched_re.group(5).split(',') if x.strip().lower() in SUPPORTED_TESTS]
     print ('tests requested:')
+    if len(testlist) == 0:
+        testlist = DEFAULT_TESTS
     return [testlist, 'current']
 
 def get_tests_for(monorepo_packages):
