@@ -378,8 +378,11 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     for comment in comments:
         # loop through once to ascertain when the bot last commented
         if comment.user.login == repo_config.CMSBUILD_USER:
-            not_seen_yet = False
-            last_time_seen = comment.created_at
+            if last_time_seen is None or last_time_seen < comment.created_at:
+                not_seen_yet = False
+                last_time_seen = comment.created_at
+                print (comment.user.login, last_time_seen)
+    print ("Last time seen", last_time_seen)
 
     # we might not have commented, but e.g. changed a label instead...
     for event in pr.get_issue_events():
@@ -397,7 +400,8 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
             continue
 
         # neglect comments we've already responded to
-        if not (comment.created_at > last_time_seen):
+        if (comment.created_at < last_time_seen):
+            print ("IGNORE COMMENT (seen)", comment.user.login, comment.created_at, '<', last_time_seen)
             continue
 
         # neglect comments by un-authorised users
