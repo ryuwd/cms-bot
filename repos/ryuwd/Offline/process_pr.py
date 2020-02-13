@@ -155,6 +155,7 @@ def create_properties_file_tests(
     extra_prop=None,
     new_tests=True,
     head_sha='',
+    master_sha='HEAD',
 ):
     if abort:
         req_type = "abort"
@@ -173,6 +174,7 @@ def create_properties_file_tests(
     parameters["REPOSITORY"] = repository
     parameters["PULL_REQUEST"] = pr_number
     parameters["COMMIT_SHA"] = head_sha
+    parameters["MASTER_COMMIT_SHA"] = master_sha
     if extra_prop:
         for x in extra_prop:
             parameters[x] = extra_prop[x]
@@ -449,6 +451,8 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     # - trigger tests if indicated (for this specific SHA.)
     # - set the current status for this commit SHA
     # - make a comment if required
+    
+    master_commit_sha = repo.get_branch("master").commit
 
     for test, state in test_statuses.items():
         labels.append('%s %s' % (test, state))
@@ -469,6 +473,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
                     repo_config=repo_config,
                     new_tests=True,
                     head_sha=git_commit.sha
+                    master_sha=master_commit_sha,
                 )
             if not dryRun:
                 last_commit.create_status(
