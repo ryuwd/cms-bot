@@ -22,8 +22,8 @@ CREATE_EXTERNAL_ISSUE=False
 JENKINS_SERVER="https://buildmaster.fnal.gov/buildmaster"
 
 #GH Web hook pass phrase. This is encrypeted used bot keys.
-GITHUB_WEBHOOK_TOKEN="""U2FsdGVkX19akbUO9GV/sfW46u9HUcJxcJtAo1oHRWOzTjeib95IvymrqUUcxCrv
-+C0TsoP8i5gHZ3gq/g9bVQ=="""
+GITHUB_WEBHOOK_TOKEN="""U2FsdGVkX19PBZ+7mbii/zhgnEfFubgVOlQdma65gS0WQC9S4E6xzMvlCEGdLdzZ
+Z7/Stk/oQHs+u669dPQm+g=="""
 
 #Set to True if you want bot to add build/test labels to your repo
 ADD_LABELS=True
