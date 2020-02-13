@@ -105,12 +105,13 @@ if __name__ == "__main__":
     print("Found hooks:",hooks)
     repo = repos[repo_name]
     if not repo: repo = gh.get_repo(repo_name)
-    repo.edit(default_branch='develop')
+    #repo.edit(default_branch='develop')
+    api_rate_limits(gh)
     repo_hooks_all = {}
     for hook in repo.get_hooks():
+      print(hook)
       if "name" in hook.config:
         repo_hooks_all[ hook.config['name'] ] = hook 
-    api_rate_limits(gh)
     print("Dryrun:",opts.dryRun)
     for hook in hooks:
       print("checking for web hook", hook)

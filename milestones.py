@@ -92,7 +92,6 @@ RELEASE_BRANCH_PRODUCTION.append("CMSSW_9_3_X")
 RELEASE_BRANCH_PRODUCTION.append("CMSSW_9_3_ROOT6_X")
 RELEASE_BRANCH_PRODUCTION.append("CMSSW_9_3_DEVEL_X")
 RELEASE_MANAGERS["CMSSW_9_3_X"]=["kpedro88"]
-
 #CMSSW_9_4_X release cycle
 RELEASE_BRANCH_MILESTONE["CMSSW_9_4_X"]=71
 RELEASE_BRANCH_PRODUCTION.append("CMSSW_9_4_X")
@@ -173,3 +172,10 @@ RELEASE_BRANCH_PRODUCTION.append("CMSSW_11_0_X")
 RELEASE_BRANCH_PRODUCTION.append("CMSSW_11_0_DEVEL_X")
 RELEASE_BRANCH_PRODUCTION.append("CMSSW_11_0_CXXMODULE_X")
 RELEASE_BRANCH_PRODUCTION.append("CMSSW_11_0_ROOT614_X")
+
+######################################################################
+# Automatically added by cms-bot for CMSSW_11_1_X release cycle
+######################################################################
+RELEASE_BRANCH_MILESTONE["CMSSW_11_1_X"]=82
+RELEASE_BRANCH_PRODUCTION.append("CMSSW_11_1_X")
+RELEASE_BRANCH_PRODUCTION.append("CMSSW_11_1_DEVEL_X")
