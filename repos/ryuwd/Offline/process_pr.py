@@ -112,22 +112,6 @@ def check_test_cmd_mu2e(full_comment, repository):
 
     return None
 
-
-def get_last_commit(pr):
-    last_commit = None
-    try:
-        # This requires at least PyGithub 1.23.0. Making it optional for the moment.
-        last_commit = pr.get_commits().reversed[0].commit
-    except:
-        # This seems to fail for more than 250 commits. Not sure if the
-        # problem is github itself or the bindings.
-        try:
-            last_commit = pr.get_commits()[pr.commits - 1].commit
-        except IndexError:
-            print("Index error: May be PR with no commits")
-    return last_commit
-
-
 # Read a yaml file
 def read_repo_file(repo_config, repo_file, default=None):
     import yaml
@@ -274,7 +258,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     # get PR and changed libraries / packages
     pr_repo = gh.get_repo(repo.full_name)
     pr_files = pr.get_files()
-    
+
     # this will be the commit of master that the PR is merged
     # into for the CI tests (for a buildtest this is just the HEAD.
     master_commit_sha = repo.get_branch("master").commit
@@ -374,7 +358,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         # doesn't support states)
         if ('running' in stat.description):
             test_statuses[name] = 'running'
-        
+
         if (stat.context == 'mu2e/buildtest' and stat.description.startswith(':')):
             # this is the commit SHA in master that we merged into
             master_commit_sha = stat.description.replace(':','')
@@ -459,7 +443,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     # - trigger tests if indicated (for this specific SHA.)
     # - set the current status for this commit SHA
     # - make a comment if required
-    
+
     for test, state in test_statuses.items():
         labels.append('%s %s' % (test, state))
 
@@ -483,7 +467,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
                 )
             if not dryRun:
                 if test == 'build':
-                    # we need to store somewhere the master commit SHA 
+                    # we need to store somewhere the master commit SHA
                     # that we merge into for the build test (for validation)
                     # this is overlapped with the next, more human readable message
                     # below - but we will still be able to access this status.
