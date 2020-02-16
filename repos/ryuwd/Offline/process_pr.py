@@ -306,7 +306,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         tests_already_triggered = []
 
         if trigger_search is not None:
-            tests, run_with = trigger_search
+            tests, _ = trigger_search
             print ("Triggered! Comment: %s" % comment.body)
             print ('current test(s): %r' % tests_to_trigger)
             print ('adding these test(s): %r' % tests )
