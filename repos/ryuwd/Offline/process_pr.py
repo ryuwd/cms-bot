@@ -1,34 +1,5 @@
 from __future__ import print_function
-from categories import (
-    CMSSW_CATEGORIES,
-    CMSSW_L2,
-    CMSSW_L1,
-    TRIGGER_PR_TESTS,
-    CMSSW_ISSUES_TRACKERS,
-    PR_HOLD_MANAGERS,
-    EXTERNAL_REPOS,
-    CMSDIST_REPOS,
-)
-import categories
-from releases import (
-    RELEASE_BRANCH_MILESTONE,
-    RELEASE_BRANCH_PRODUCTION,
-    RELEASE_BRANCH_CLOSED,
-    CMSSW_DEVEL_BRANCH,
-)
-from releases import RELEASE_MANAGERS, SPECIAL_RELEASE_MANAGERS
-from cms_static import (
-    VALID_CMSDIST_BRANCHES,
-    NEW_ISSUE_PREFIX,
-    NEW_PR_PREFIX,
-    ISSUE_SEEN_MSG,
-    BUILD_REL,
-    GH_CMSDIST_REPO,
-    CMSBOT_IGNORE_MSG,
-    VALID_CMS_SW_REPOS_FOR_TESTS,
-)
-from cms_static import BACKPORT_STR, GH_CMSSW_ORGANIZATION
-from repo_config import GH_REPO_ORGANIZATION, GH_CMSSW_REPO
+
 import re, time, os
 from datetime import datetime
 from os.path import join, exists
@@ -36,36 +7,11 @@ from os import environ
 from github_utils import get_token, edit_pr, api_rate_limits
 from socket import setdefaulttimeout
 from _py2with3compatibility import run_cmd
+
 from github import Github
 
-print("""
-
-    .::   .::       .::  .:: ::        .:: .::       .::::     .::: .::::::
- .::   .::.: .::   .:::.::    .::      .:    .::   .::    .::       .::
-.::       .:: .:: . .:: .::            .:     .::.::        .::     .::
-.::       .::  .::  .::   .::    .:::::.::: .:   .::        .::     .::
-.::       .::   .:  .::      .::       .:     .::.::        .::     .::
- .::   .::.::       .::.::    .::      .:      .:  .::     .::      .::
-   .::::  .::       .::  .:: ::        .:::: .::     .::::          .::
-
-.::       .::
-.: .::   .:::         .:::.:
-.:: .:: . .::.::  .::.:    .:   .::
-.::  .::  .::.::  .::    .::  .:   .::
-.::   .:  .::.::  .::  .::   .::::: .::
-.::       .::.::  .::.::     .:
-.::       .::  .::.::.:::::::  .::::
-
-""")
-
-try:
-    from categories import COMMENT_CONVERSION
-except:
-    COMMENT_CONVERSION = {}
 setdefaulttimeout(300)
 
-CMSDIST_REPO_NAME = join(GH_REPO_ORGANIZATION, GH_CMSDIST_REPO)
-CMSSW_REPO_NAME = join(GH_REPO_ORGANIZATION, GH_CMSSW_REPO)
 
 PR_SALUTATION =  """Hi @{pr_author},
 You have proposed changes to files in these packages:
@@ -81,8 +27,6 @@ which require these tests: {tests_required}.
 
 TESTS_TRIGGERED_CONFIRMATION = """:hourglass: The following tests have been triggered for ref {commit_link}: {test_list} {tests_already_running_msg}"""
 TESTS_ALREADY_TRIGGERED = """:x: Those tests have already run or are running for ref {commit_link} ({triggered_tests})"""
-
-TEST_WAIT_GAP = 720
 
 
 # Mu2e triggering statements are in 'test_suites.py'
@@ -103,29 +47,16 @@ def check_test_cmd_mu2e(full_comment, repository):
     for regex, handler in test_suites.TESTS:
         # returns the first match in the comment
         match = regex.search(full_comment)
-        print (regex, full_comment, match)
-
         if match is None:
             continue
-        return handler(match)
+        handle = handler(match)
+
+        if handle is None:
+            continue
+
+        return handle
 
     return None
-
-
-def get_last_commit(pr):
-    last_commit = None
-    try:
-        # This requires at least PyGithub 1.23.0. Making it optional for the moment.
-        last_commit = pr.get_commits().reversed[0].commit
-    except:
-        # This seems to fail for more than 250 commits. Not sure if the
-        # problem is github itself or the bindings.
-        try:
-            last_commit = pr.get_commits()[pr.commits - 1].commit
-        except IndexError:
-            print("Index error: May be PR with no commits")
-    return last_commit
-
 
 # Read a yaml file
 def read_repo_file(repo_config, repo_file, default=None):
@@ -139,68 +70,6 @@ def read_repo_file(repo_config, repo_file, default=None):
             contents = default
     return contents
 
-#
-# creates a properties file to trigger the test of the pull request
-#
-def create_properties_file_tests(
-    repository,
-    pr_number,
-    cmsdist_pr,
-    cmssw_prs,
-    dryRun,
-    abort=False,
-    req_type="tests",
-    repo_config=None,
-    extra_prop=None,
-    new_tests=True,
-    head_sha='',
-):
-    if abort:
-        req_type = "abort"
-    repo_parts = repository.split("/")
-    if req_type in "tests":
-        try:
-            if not repo_parts[0] in EXTERNAL_REPOS:
-                req_type = "user-" + req_type
-            elif not repo_config.CMS_STANDARD_TESTS:
-                req_type = "user-" + req_type
-        except:
-            pass
-    repo_partsX = repository.replace("/", "-")
-    out_file_name = "trigger-%s-%s-%s.properties" % (req_type, repo_partsX, pr_number)
-    parameters = {}
-    parameters["REPOSITORY"] = repository
-    parameters["PULL_REQUEST"] = pr_number
-    parameters["COMMIT_SHA"] = head_sha
-    if extra_prop:
-        for x in extra_prop:
-            parameters[x] = extra_prop[x]
-    if new_tests:
-        prs = ["%s#%s" % (repository, pr_number)]
-        for pr in [p for p in cmssw_prs.split(",") if p]:
-            if "#" not in pr:
-                pr = "%s#%s" % (repository, pr)
-            prs.append(pr)
-        parameters["PULL_REQUESTS"] = ",".join(prs)
-        parameters["USE_MULTIPLE_PRS_JOB"] = "true"
-    else:
-        parameters["PUB_USER"] = repo_parts[0]
-        if repo_parts[1] == GH_CMSDIST_REPO:
-            parameters["CMSDIST_PR"] = pr_number
-        else:
-            parameters["PULL_REQUEST"] = pr_number
-            parameters["CMSDIST_PR"] = cmsdist_pr
-            parameters["ADDITIONAL_PULL_REQUESTS"] = cmssw_prs
-    try:
-        if repo_config.JENKINS_SLAVE_LABEL:
-            parameters["RUN_LABEL"] = repo_config.JENKINS_SLAVE_LABEL
-    except:
-        pass
-    print("PropertyFile: ", out_file_name)
-    print("Data:", parameters)
-    create_property_file(out_file_name, parameters, dryRun)
-
-
 def create_property_file(out_file_name, parameters, dryRun):
     if dryRun:
         print("Not creating cleanup properties file (dry-run): %s" % out_file_name)
@@ -211,55 +80,50 @@ def create_property_file(out_file_name, parameters, dryRun):
         out_file.write("%s=%s\n" % (k, parameters[k]))
     out_file.close()
 
+def create_properties_file_for_test(test, repository, pr_number, pr_commit_sha, master_commit_sha, dryRun=False):
+    repo_partsX = repository.replace("/", "-") # mu2e/Offline ---> mu2e-Offline
+    out_file_name = "trigger-mu2e-%s-%s-%s.properties" % (test.replace(' ', '-'), repo_partsX, pr_number)
 
-# Update the milestone for a given issue.
-def updateMilestone(repo, issue, pr, dryRun):
-    milestoneId = RELEASE_BRANCH_MILESTONE.get(pr.base.label.split(":")[1], None)
-    if not milestoneId:
-        print("Unable to find a milestone for the given branch")
-        return
-    if pr.state != "open":
-        print("PR not open, not setting/checking milestone")
-        return
-    if issue.milestone and issue.milestone.id == milestoneId:
-        return
-    milestone = repo.get_milestone(milestoneId)
-    print("Setting milestone to %s" % milestone.title)
-    if dryRun:
-        return
-    issue.edit(milestone=milestone)
+    parameters = {}
+    parameters["TEST_NAME"] = test
+    parameters["REPOSITORY"] = repository
+    parameters["PULL_REQUEST"] = pr_number
+    parameters["COMMIT_SHA"] = pr_commit_sha
+    parameters["MASTER_COMMIT_SHA"] = master_commit_sha
+
+    create_property_file(out_file_name, parameters, dryRun)
 
 
-def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=False):
-    api_rate_limits(gh)
+def get_modified(modified_files):
+    modified_top_level_folders = []
+    for f in modified_files:
+        filename, file_extension = os.path.splitext(f.filename)
+        print( "Changed file (%s): %s%s" % (file_extension, filename, file_extension) )
 
+        splits = filename.split('/')
+        if len(splits) > 1:
+            modified_top_level_folders.append(splits[0])
+        else:
+            modified_top_level_folders.append('/')
+
+    return set(modified_top_level_folders)
+
+def get_authorised_users(gh, repo):
     mu2eorg = gh.get_organization("Mu2e")
     #mu2eteams = mu2eorg.get_teams()
     mu2e_write = ['ryuwd']#mu2eorg.get_team_by_slug('write') TODO: remove after testing
     mu2e_write_mems =['ryuwd']# [mem.login for mem in mu2e_write.get_members()]
 
-    if not issue.pull_request:
-        return
-
     # users authorised to communicate with this bot
-    authorised_users = set(mu2e_write_mems)
+    return set(mu2e_write_mems)
 
-    not_seen_yet = True
-    last_time_seen = None
-    labels = []
-    # commit test states:
-    test_statuses = {}
-    test_triggered = {}
-    test_status_exists = {} # did we already create a commit status?
 
-    # tests we'd like to trigger on this commit
-    tests_to_trigger = []
+def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=False):
+    api_rate_limits(gh)
 
-    # tests we've already triggered
-    tests_already_triggered = []
-    # top-level folders of the Offline 'monorepo'
-    # that have been edited by this PR
-    modified_top_level_folders = []
+    if not issue.pull_request:
+        print("Ignoring: Not a PR")
+        return
 
     prId = issue.number
     pr = repo.get_pull(prId)
@@ -268,21 +132,30 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         print("Ignoring: PR with no files changed")
         return
 
-    # get PR and changed libraries / packages
-    pr_repo = gh.get_repo(repo.full_name)
+    authorised_users = get_authorised_users(gh, repo)
+
+    not_seen_yet = True
+    last_time_seen = None
+    labels = []
+
+    # commit test states:
+    test_statuses = {}
+    test_triggered = {}
+
+    # did we already create a commit status?
+    test_status_exists = {}
+
+    # tests we'd like to trigger on this commit
+    tests_to_trigger = []
+    # tests we've already triggered
+    tests_already_triggered = []
+
+    # get PR changed libraries / packages
     pr_files = pr.get_files()
 
-    for f in pr_files:
-        filename, file_extension = os.path.splitext(f.filename)
-        print( "Changed file (%s): %s.%s" % (file_extension, filename, file_extension) )
-
-        splits = filename.split('/')
-        if len(splits) > 1:
-            modified_top_level_folders.append(splits[0])
-        else:
-            modified_top_level_folders.append('/')
-
-    modified_top_level_folders = set(modified_top_level_folders)
+    # top-level folders of the Offline 'monorepo'
+    # that have been edited by this PR
+    modified_top_level_folders = get_modified(pr_files)
     print ('Build Targets changed:')
     print (
         '\n'.join(['- %s' % s for s in modified_top_level_folders])
@@ -291,7 +164,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     # TODO: print modified monorepo package folders in 'greeting' message
     watchers = read_repo_file(repo_config, "watchers.yaml", {})
 
-    print ('watchers:', watchers )
+    print ('watchers:', watchers)
 
     # get required tests
     test_requirements = test_suites.get_tests_for(modified_top_level_folders)
@@ -302,6 +175,10 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         test_statuses[test] = 'pending'
         test_triggered[test] = False
         test_status_exists[test] = False
+
+    # this will be the commit of master that the PR is merged
+    # into for the CI tests (for a build test this is just the current HEAD.)
+    master_commit_sha = repo.get_branch("master").commit
 
     # get latest commit
     last_commit = pr.get_commits().reversed[0]
@@ -316,6 +193,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         " at ",
         last_commit_date,
     )
+
     print("Latest commit message: ", git_commit.message.encode("ascii", "ignore"))
     print("Latest commit sha: ", git_commit.sha)
     print("PR update time", pr.updated_at)
@@ -348,26 +226,38 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         name = test_suites.get_test_name(stat.context)
         if name == 'unrecognised':
             continue
-        if name in commit_status_time:
-            if commit_status_time[name] > stat.updated_at:
-                continue
+        if name in commit_status_time and commit_status_time[name] > stat.updated_at:
+            continue
+
         commit_status_time[name] = stat.updated_at
 
         # error, failure, pending, success
         test_statuses[name] = stat.state
         if stat.state in state_labels:
             test_statuses[name] = state_labels[stat.state]
-        test_status_exists[name] = True
 
-        if name in test_triggered:
-            if test_triggered[name]: # if already True, don't change it
-                continue
-        test_triggered[name] = ('has been triggered' in stat.description)
+        test_status_exists[name] = True
+        if name in test_triggered and test_triggered[name]: # if already True, don't change it
+            continue
+
+        test_triggered[name] = ('has been triggered' in stat.description) or (stat.state == 'success' or stat.state == 'failure')
 
         # some other labels, gleaned from the description (the status API
-        # doesn't support states)
+        # doesn't support these states)
         if ('running' in stat.description):
             test_statuses[name] = 'running'
+
+        # check if we've stalled
+        if (test_statuses[name] in ['running', 'pending']):
+            if (datetime.utcnow() - stat.updated_at).total_seconds() > test_suites.get_stall_time(name):
+                test_triggered[name] = False # the test may be triggered again.
+                test_statuses[name] = 'stalled'
+
+
+        if (stat.context == 'mu2e/buildtest' and stat.description.startswith(':')):
+            # this is the commit SHA in master that we merged into
+            # this is important if we want to trigger a validation job
+            master_commit_sha = stat.description.replace(':','')
 
 
 
@@ -386,16 +276,17 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
 
     # we might not have commented, but e.g. changed a label instead...
     for event in pr.get_issue_events():
-        if event.actor.login == repo_config.CMSBUILD_USER:
-            if event.created_at > last_time_seen:
+        if event.actor.login == repo_config.CMSBUILD_USER and event.event in ['labeled', 'unlabeled']:
+            if last_time_seen is None or last_time_seen < event.created_at:
                 last_time_seen = event.created_at
+                print (last_time_seen, event)
+    print ("Last time seen", last_time_seen)
 
 
     # now we process comments
     for comment in comments:
-        # Ignore all other messages which are before last commit.
-        # TODO: we should handle abort messages here that come before the last commit
 
+        # Ignore all messages which are before last commit.
         if (comment.created_at < last_commit_date):
             continue
 
@@ -406,7 +297,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
 
         # neglect comments by un-authorised users
         if not comment.user.login in authorised_users:
-            print("IGNORE comment from %s." % comment.user.login)
+            print("IGNORE COMMENT (unauthorised) - %s." % comment.user.login)
             continue
 
         # now look for bot triggers
@@ -415,15 +306,14 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         tests_already_triggered = []
 
         if trigger_search is not None:
-            tests, run_with = trigger_search
+            tests, _ = trigger_search
             print ("Triggered! Comment: %s" % comment.body)
-            print ('current test(s) to trigger: %r' % tests_to_trigger)
-            print ('add test(s) to trigger: %r' % tests )
+            print ('current test(s): %r' % tests_to_trigger)
+            print ('adding these test(s): %r' % tests )
 
             for test in tests:
                 # check that the test has been triggered on this commit first
-                if test in test_triggered: # has the test been added?
-                    if test_triggered[test]:
+                if test in test_triggered and test_triggered[test]:
                         print ("The test has already been triggered for this ref. It will not be triggered again.")
                         tests_already_triggered.append(test)
                         continue
@@ -443,9 +333,9 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
 
 
     # now,
-    # - apply labels according to the state of the latest commit of the PR
     # - trigger tests if indicated (for this specific SHA.)
     # - set the current status for this commit SHA
+    # - apply labels according to the state of the latest commit of the PR
     # - make a comment if required
 
     for test, state in test_statuses.items():
@@ -454,21 +344,25 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         if test in tests_to_trigger:
             print ("TEST WILL NOW BE TRIGGERED: %s" % test)
             # trigger the test in jenkins
-            # TODO: figure out how these properties files will trigger
-            # the mu2e Jenkins jobs
-            create_properties_file_tests(
-                    repo.full_name,
-                    prId,
-                    '',
-                    '',
-                    dryRun,
-                    req_type='mu2e-' + test.replace(' ','-'),
-                    abort=False,
-                    repo_config=repo_config,
-                    new_tests=True,
-                    head_sha=git_commit.sha
-                )
+            create_properties_file_for_test(
+                name,
+                repo.full_name,
+                prId,
+                git_commit.sha,
+                master_commit_sha
+            )
             if not dryRun:
+                if test == 'build':
+                    # we need to store somewhere the master commit SHA
+                    # that we merge into for the build test (for validation)
+                    # this is overlapped with the next, more human readable message
+                    last_commit.create_status(
+                            state="pending",
+                            target_url="https://github.com/mu2e/Offline",
+                            description=":%s" % master_commit_sha,
+                            context=test_suites.get_test_alias(test)
+                    )
+
                 last_commit.create_status(
                             state="pending",
                             target_url="https://github.com/mu2e/Offline",
@@ -494,31 +388,31 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         # don't do anything else with commit statuses
         # the script handler that handles Jenkins job results will update the commits accordingly
 
-    commitlink = 'https://github.com/%s/pull/%s/commits/%s' % (repo.full_name, prId, git_commit.sha)
+    # check if labels have changed
+    labelnames =  [x.name for x in issue.labels]
+    if (set(labelnames) != set(labels)):
+        if not dryRun:
+            issue.edit(labels=labels)
+        print ("Labels have changed to: ", labels)
+
+
+    # construct a reply if tests have been triggered.
     tests_triggered_msg = ''
     already_running_msg = ''
+    commitlink = 'https://github.com/%s/pull/%s/commits/%s' % (repo.full_name, prId, git_commit.sha)
+
     if len(tests_to_trigger) > 0:
         if len(tests_already_triggered) > 0:
             already_running_msg = '(already triggered: %s)' % ','.join(tests_already_triggered)
-        tests_triggered_msg = TESTS_TRIGGERED_CONFIRMATION.format(commit_link=commitlink, test_list=', '.join(tests_to_trigger), tests_already_running_msg=already_running_msg)
 
-    # check if labels have changed
-    labelnames =  [x.name for x in issue.labels]
-    for l in labels:
-        if l not in labelnames:
-            if not dryRun:
-                issue.edit(labels=labels)
-            print ("labels have changed to: ", labels)
-            break
+        tests_triggered_msg = TESTS_TRIGGERED_CONFIRMATION.format(
+            commit_link=commitlink,
+            test_list=', '.join(tests_to_trigger),
+            tests_already_running_msg=already_running_msg
+        )
 
-    # check if we have any lingering labels!
-    for l in labelnames:
-        if l not in labels:
-            if not dryRun:
-                issue.edit(labels=labels)
-            print ("labels have changed to: ", labels)
-            break
 
+    # decide if we should issue a comment, and what comment to issue
     if not_seen_yet:
         print ("First time seeing this PR - send the user a salutation!")
         if not dryRun:
@@ -531,9 +425,13 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
             ))
 
     elif len(tests_to_trigger) > 0:
+        # tests were triggered, let people know about it
         if not dryRun:
             issue.create_comment(tests_triggered_msg)
+
     elif len(tests_to_trigger) == 0 and len(tests_already_triggered) > 0:
         if not dryRun:
-            issue.create_comment(TESTS_ALREADY_TRIGGERED.format(commit_link=commitlink, triggered_tests=', '.join(tests_already_triggered))
+            issue.create_comment(TESTS_ALREADY_TRIGGERED.format(
+                commit_link=commitlink,
+                triggered_tests=', '.join(tests_already_triggered))
 )

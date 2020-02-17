@@ -30,11 +30,6 @@ ADD_LABELS=True
 #Set to True if you want bot to add GH webhooks. FNALbuild needs admin rights
 ADD_WEB_HOOK=True
 
-#List of issues/pr which bot should ignore
-IGNORE_ISSUES = [0]
-#Set the Jenkins slave label is your tests needs special machines to run.
-JENKINS_SLAVE_LABEL=""
-
 #For cmsdist/cmssw repos , set it to False if you do not want to run standard cms pr tests
 CMS_STANDARD_TESTS=False
 #Map your branches with cmssw branches for tests
@@ -42,6 +37,3 @@ CMS_STANDARD_TESTS=False
 CMS_BRANCH_MAP={
 }
 VALID_WEB_HOOKS=["issues","pull_request","issue_comment"]
-OPEN_ISSUE_FOR_PUSH_TESTS=True
-
-def file2Package(filename): return GH_CMSSW_REPO
