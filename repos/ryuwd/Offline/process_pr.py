@@ -178,7 +178,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
 
     # this will be the commit of master that the PR is merged
     # into for the CI tests (for a build test this is just the current HEAD.)
-    master_commit_sha = repo.get_branch("master").commit
+    master_commit_sha = repo.get_branch("master").commit.sha
 
     # get latest commit
     last_commit = pr.get_commits().reversed[0]
