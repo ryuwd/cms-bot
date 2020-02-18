@@ -13,6 +13,7 @@ COMMON_CATEGORIES = [ "L1", "tests", "code-checks" ]
 EXTERNAL_CATEGORIES = [ "externals" ]
 EXTERNAL_REPOS =  [
                   "LArSoft/larana",
+                  "LArSoft/larbatch",
                   "LArSoft/larcore",
                   "LArSoft/larcorealg",
                   "LArSoft/larcoreobj",
@@ -30,6 +31,7 @@ EXTERNAL_REPOS =  [
                   "LArSoft/larwirecell",
                   "LArSoft/larsoft",
                   "LArSoft/larsoftobj",
+                  "LArSoft/larutils",
                   ]
 
 EXTERNAL_REPOS.remove( gh_user+"/"+gh_repo )
@@ -49,4 +51,3 @@ CMSSW_L2 = {
 USERS_TO_TRIGGER_HOOKS = set(TRIGGER_PR_TESTS + CMSSW_ISSUES_TRACKERS + list(CMSSW_L2.keys()))
 CMS_REPOS = set(CMSDIST_REPOS + CMSSW_REPOS + EXTERNAL_REPOS)
 def external_to_package(repo_fullname): return ''
-

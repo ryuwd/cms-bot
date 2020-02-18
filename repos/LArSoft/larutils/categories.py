@@ -13,6 +13,7 @@ COMMON_CATEGORIES = [ "L1", "code-checks" ]
 EXTERNAL_CATEGORIES = [ "externals" ]
 EXTERNAL_REPOS =  [
                   "LArSoft/larana",
+                  "LArSoft/larbatch",
                   "LArSoft/larcore",
                   "LArSoft/larcorealg",
                   "LArSoft/larcoreobj",

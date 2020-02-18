@@ -1,6 +1,5 @@
 from os.path import basename,dirname,abspath
 GH_CMSSW_ORGANIZATION="LArSoft"
-GH_CMSSW_REPO="larpandora"
 CMSBUILD_GH_USER="FNALbuild"
 #This is overridden by GITHUBTOKEN env var
 GH_TOKEN="~/.github-token-FNALbuild"
@@ -10,7 +9,8 @@ CONFIG_DIR=dirname(abspath(__file__))
 #GH bot user: Use default FNALbuild
 CMSBUILD_USER="FNALbuild"
 GH_REPO_ORGANIZATION=basename(dirname(CONFIG_DIR))
-GH_REPO_FULLNAME="LArSoft/larpandora"
+GH_CMSSW_REPO=basename(CONFIG_DIR)
+GH_REPO_FULLNAME="%s/%s" % (GH_REPO_ORGANIZATION, GH_CMSSW_REPO)
 CREATE_EXTERNAL_ISSUE=False
 #Jenkins CI server: User default http://cmsjenkins05.cern.ch:8080/cms-jenkins
 JENKINS_SERVER="https://buildmaster.fnal.gov/buildmaster"
@@ -33,4 +33,4 @@ CMS_BRANCH_MAP={
 }
 VALID_WEB_HOOKS=["issues","pull_request","issue_comment"]
 OPEN_ISSUE_FOR_PUSH_TESTS=True
-def file2Package(filename): return "/".join(filename.split("/")[0:1])
+def file2Package(filename): return GH_CMSSW_REPO

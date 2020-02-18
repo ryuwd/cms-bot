@@ -12,8 +12,8 @@ PR_HOLD_MANAGERS = [ ]
 COMMON_CATEGORIES = [ "L1", "code-checks" ]
 EXTERNAL_CATEGORIES = [ "externals" ]
 EXTERNAL_REPOS =  [
-                  "LArSoft/larbatch",
                   "LArSoft/larana",
+                  "LArSoft/larbatch",
                   "LArSoft/larcore",
                   "LArSoft/larcorealg",
                   "LArSoft/larcoreobj",
@@ -25,6 +25,7 @@ EXTERNAL_REPOS =  [
                   "LArSoft/lareventdisplay",
                   "LArSoft/larg4",
                   "LArSoft/larpandora",
+                  "LArSoft/larpandoracontent",
                   "LArSoft/larsim",
                   "LArSoft/larreco",
                   "LArSoft/larwirecell",

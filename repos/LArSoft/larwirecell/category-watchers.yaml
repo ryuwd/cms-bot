@@ -2,6 +2,6 @@
 # valid categories are available here http://cms-sw.github.io/categories.html
 #Format
 #gh_user:
-# - category1
-# - category2
+#- category
+#- category
 #

@@ -8,4 +8,4 @@
 #  - subsystem2/package1
 #  - subsystem2/package2
 #LArSoft/Core:
-#  - larpandora
+#  - categories
