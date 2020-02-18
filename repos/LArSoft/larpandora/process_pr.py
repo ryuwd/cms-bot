@@ -451,8 +451,8 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     if pr.changed_files==0:
       print("Ignoring: PR with no files changed")
       return
-    pr-base-ref = pr.base.ref
-    if cmssw_repo and cms_repo and (pr-base-ref != "develop"):
+    prbaseref = pr.base.ref
+    if cmssw_repo and cms_repo and (pr.base.ref != "develop"):
       if pr.state != "closed":
         print("This pull request must go in to develop branch")
         if not dryRun:
@@ -460,7 +460,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
           msg = format("@%(user)s, %(dev_branch)s branch is closed for direct updates. cms-bot is going to move this PR to develop branch.\n"
                        "In future, please use cmssw develop branch to submit your changes.\n",
                        user=requestor,
-                       dev_branch=pr-base-ref)
+                       dev_branch=prbaseref)
           issue.create_comment(msg)
       return
     # A pull request is by default closed if the branch is a closed one.
@@ -1224,7 +1224,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
   elif (not already_seen) or pull_request_updated:
     if not already_seen: commentMsg = messageNewPR
     else: commentMsg = messageUpdatedPR
-    if (not triggerred_code_checks) and cmssw_repo) and ("code-checks" in signatures) and (signatures["code-checks"]=="pending"):
+    if (not triggerred_code_checks) and cmssw_repo and ("code-checks" in signatures) and (signatures["code-checks"]=="pending"):
       trigger_code_checks=True
   elif new_categories:
     commentMsg = messageUpdatedPR
