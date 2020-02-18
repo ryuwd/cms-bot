@@ -2,9 +2,9 @@ from __future__ import print_function
 from categories import CMSSW_CATEGORIES, CMSSW_L2, CMSSW_L1, TRIGGER_PR_TESTS, CMSSW_ISSUES_TRACKERS, PR_HOLD_MANAGERS, EXTERNAL_REPOS,CMSDIST_REPOS, external_to_package
 from releases import RELEASE_BRANCH_MILESTONE, RELEASE_BRANCH_PRODUCTION, CMSSW_DEVEL_BRANCH
 from releases import get_release_managers, is_closed_branch
-from cms_static import VALID_CMSDIST_BRANCHES, NEW_ISSUE_PREFIX, NEW_PR_PREFIX, ISSUE_SEEN_MSG, BUILD_REL,  GH_CMSDIST_REPO, CMSBOT_IGNORE_MSG, VALID_CMS_SW_REPOS_FOR_TESTS
+from cms_static import VALID_CMSDIST_BRANCHES, NEW_ISSUE_PREFIX, NEW_PR_PREFIX, ISSUE_SEEN_MSG, BUILD_REL, GH_CMSSW_REPO, GH_CMSDIST_REPO, CMSBOT_IGNORE_MSG, VALID_CMS_SW_REPOS_FOR_TESTS
 from cms_static import BACKPORT_STR,GH_CMSSW_ORGANIZATION
-from repo_config import GH_CMSSW_REPO,GH_REPO_ORGANIZATION
+from repo_config import GH_REPO_ORGANIZATION
 import re, time
 from datetime import datetime
 from os.path import join, exists
@@ -12,7 +12,6 @@ from os import environ
 from github_utils import get_token, edit_pr, api_rate_limits
 from socket import setdefaulttimeout
 from _py2with3compatibility import run_cmd
-from github import Github
 
 try: from categories import COMMENT_CONVERSION
 except: COMMENT_CONVERSION={}
@@ -61,59 +60,6 @@ MULTILINE_COMMENTS_MAP = {
               "ignore_test(s|)":  ["build-warnings|clang-warnings",                                             "IGNORE_BOT_TESTS"]
               }
 
-
-LARSOFT_REPOS =  ["larana",
-                  "larbatch",
-                  "larcore",
-                  "larcorealg",
-                  "larcoreobj",
-                  "lardata",
-                  "lardataalg",
-                  "lardataobj",
-                  "larevt",
-                  "larexamples",
-                  "lareventdisplay",
-                  "larg4",
-                  "larpandora",
-                  "larpandoracontent",
-                  "larsim",
-                  "larreco",
-                  "larutils",
-                  "larwirecell",
-                  "larsoft",
-                  "larsoftobj",
-                  ]
-LAR_PR_PATTERN=format('(LArSoft/+(%(repos)s)#[0-9]+|(%(repos)s)#[0-9]+|#[0-9]+|https://github.com/+[a-zA-Z0-9_-]+/+(%(repos)s)/+pull/+[0-9]+)',
-                      repos='|'.join(LARSOFT_REPOS))
-REGEX_TEST_PRP = re.compile(LAR_PR_PATTERN, re.I)
-
-TEST_REGEXP_LAR_PR = format("^\s*((@|)FNALbuild\s*[,]*\s+|)(please\s*[,]*\s+|)trigger\s+build((\s+with\s+pull\s+request[s]?\s+(%(lar_pr)s(\s*,\s*%(lar_pr)s)*))|)\s*$", 
-                     lar_pr=LAR_PR_PATTERN)
-REGEX_TEST_REG_LAR_PR = re.compile(TEST_REGEXP_LAR_PR, re.I)
-
-assert(REGEX_TEST_REG_LAR_PR.match(r'trigger build'))
-assert(REGEX_TEST_REG_LAR_PR.match(r'please trigger build'))
-assert(REGEX_TEST_REG_LAR_PR.match(r'FNALbuild please trigger build'))
-assert(REGEX_TEST_REG_LAR_PR.match(r'FNALbuild, please trigger build'))
-assert(REGEX_TEST_REG_LAR_PR.match(r' trigger build with pull request #1'))
-assert(REGEX_TEST_REG_LAR_PR.match(r' trigger build with pull requests #1, larg4#2, larsoft/larana#3, https://github.com/LArSoft/larcore/pull/2'))
-
-TEST_REGEXP_LAR_BR = format("^\s*((@|)FNALbuild\s*[,]*\s+|)(please\s*[,]*\s+|)trigger\s+build(\s+using\s+branchnames?\s+(([/a-zA-Z0-9_-]+)(\s*(,(\s*[/a-zA-Z0-9_-]+)))*)\s+in\s+repo[s]?\s+((%(larrepos)s)((\s*,\s*((%(larrepos)s)))*))|)\s*$",
-                    larrepos='|'.join(LARSOFT_REPOS))
-
-#
-
-REGEX_TEST_REG_LAR_BR = re.compile(TEST_REGEXP_LAR_BR, re.I)
-m=REGEX_TEST_REG_LAR_BR.match('trigger build using branchname gartung-patch-1 in repos  larana, larcore, larcorealg, larcoreobj, lardata, lardataalg, lardataobj, larevt, lareventdisplay, larexamples, larg4, larpandora, larsim, larreco, larwirecell')
-assert(m)
-
-assert(REGEX_TEST_REG_LAR_BR.match(r'trigger build'))
-assert(REGEX_TEST_REG_LAR_BR.match(r'please trigger build'))
-assert(REGEX_TEST_REG_LAR_BR.match(r'FNALbuild please trigger build'))
-assert(REGEX_TEST_REG_LAR_BR.match(r'FNALbuild, please trigger build'))
-assert(REGEX_TEST_REG_LAR_BR.match(r'trigger build using branchname feature/test in repo larcore'))
-assert(REGEX_TEST_REG_LAR_BR.search(r'trigger build using branchnames feature/test,feature_test in repos larana,larcore'))
-
 def get_last_commit(pr):
   last_commit = None
   try:
@@ -134,7 +80,7 @@ def read_repo_file(repo_config, repo_file, default=None):
   file_path = join(repo_config.CONFIG_DIR, repo_file)
   contents = default
   if exists(file_path):
-    contents = (yaml.load(file(file_path), Loader=yaml.FullLoader))
+    contents = (yaml.load(file(file_path)))
     if not contents: contents = default
   return contents
 
@@ -324,47 +270,6 @@ def multiline_check_function(first_line, comment_lines, repository):
   if 'errors' in extra_params: return False, {}
   return True, extra_params
 
-def check_test_cmd_lar(first_line, repo):
-  m = REGEX_TEST_REG_LAR_PR.match(first_line)
-  if m:
-    wfs = ""
-    prs= []
-    cmssw_queue = ""
-
-    if m.group(5):
-      for pr in [x.strip().split('/github.com/',1)[-1].replace('/pull/','#').strip('/') for x in m.group(5).split(",")]:
-        while '//' in pr: pr = pr.replace('//','/')
-        if pr.startswith('#'): pr = repo+pr
-        prs.append(pr)
-    return (True, "", ','.join(prs), wfs, cmssw_queue)
-
-  m = REGEX_TEST_REG_LAR_BR.match(first_line)
-  if m:
-    gh = Github(login_or_token=environ['GITHUBTOKEN'])
-    branches=m.group(5).replace(' ','').split(',')
-    repos=m.group(10).replace(' ','').split(',')
-    wfs = ""
-    prs= set()
-    cmssw_que = ""
-
-    for repo in repos:
-        fullreponame=repo
-        if not repo.startswith('LArsoft/'):
-            fullreponame='LArSoft/'+repo
-        ghrepo = gh.get_repo(fullreponame)
-        pulls = ghrepo.get_pulls(state='open')
-        for pull in pulls:
-            for branch in branches:
-                print(branch)
-                if branch in pull.head.label:
-                    print('pull request #%s with from=%s in repo %s'%(pull.number, branch, fullreponame))
-                    prs.add('%s#%s'%(fullreponame,pull.number))
-
-    return (True, "", ','.join(sorted(list(prs))), "", "")
-
-  return (False, "", "", "", "")
-
-
 def get_changed_files(repo, pr, use_gh_patch=False):
   if (not use_gh_patch) and (pr.changed_files<=300): return [f.filename for f in pr.get_files()]
   cmd="curl -s -L https://patch-diff.githubusercontent.com/raw/%s/pull/%s.patch | grep '^diff --git ' | sed 's|.* a/||;s|  *b/.*||' | sort | uniq" % (repo.full_name,pr.number)
@@ -395,25 +300,6 @@ def get_jenkins_job(issue):
   return "",""
 
 def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=False):
-  larsoftorg=gh.get_organization('LArSoft')
-  larsoftteams=larsoftorg.get_teams()
-  larsoft_core=larsoftteams[0]
-  larsoft_l1=larsoftteams[1]
-  larsoft_l2=larsoftteams[2]
-  larsoft_core_mems = [ mem.login for mem in larsoft_core.get_members() ]
-  larsoft_l1_mems = [ mem.login for mem in larsoft_l1.get_members() ] + CMSSW_L1
-  larsoft_l2_mems = [ mem.login for mem in larsoft_l2.get_members() ] 
-  larsoft_commenters = list(set(larsoft_core_mems + larsoft_l1_mems + larsoft_l2_mems))
-  L1_CATS=CMSSW_L2['LArSoft/%s' % larsoft_l1.slug]
-  for mem in larsoft_l1_mems:
-      CMSSW_L2[mem]=L1_CATS
-  L2_CATS=CMSSW_L2['LArSoft/%s' % larsoft_l2.slug]
-  for mem in larsoft_l2_mems:
-      if mem in larsoft_l1_mems:
-          CMSSW_L2[mem].extend(L2_CATS)
-      else:
-          CMSSW_L2[mem] = L2_CATS
-
   if (not force) and ignore_issue(repo_config, repo, issue): return
   api_rate_limits(gh)
   prId = issue.number
@@ -499,10 +385,10 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     # or all externals package
     if cms_repo and ((not cmssw_repo) or (pr.base.ref in RELEASE_BRANCH_PRODUCTION)):
       print("This pull request requires ORP approval")
-      signing_categories.add("L1")
-      for l1 in larsoft_l1_mems:
-        if not l1 in larsoft_l2_mems: CMSSW_L2[l1]=[]
-        if not "L1" in CMSSW_L2[l1]: CMSSW_L2[l1].append("L1")
+      signing_categories.add("orp")
+      for l1 in CMSSW_L1:
+        if not l1 in CMSSW_L2: CMSSW_L2[l1]=[]
+        if not "orp" in CMSSW_L2[l1]: CMSSW_L2[l1].append("orp")
 
     print("Following categories affected:")
     print("\n".join(signing_categories))
@@ -515,7 +401,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
       if not has_category:
         new_package_message = "\nThe following packages do not have a category, yet:\n\n"
         new_package_message += "\n".join([package for package in packages if not package in all_packages]) + "\n"
-        new_package_message += "Please create a PR for https://github.com/FNALbuild/cms-bot/blob/master/categories_map.py to assign category\n"
+        new_package_message += "Please create a PR for https://github.com/cms-sw/cms-bot/blob/master/categories_map.py to assign category\n"
         print(new_package_message)
         signing_categories.add("new-package")
 
@@ -610,7 +496,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
   for c in issue.get_comments(): all_comments.append(c)
   for comment in all_comments:
     commenter = comment.user.login.encode("ascii", "ignore")
-    valid_commenter = commenter in TRIGGER_PR_TESTS + larsoft_l2_mems + larsoft_l1_mems + larsoft_core_mems + releaseManagers + [repo_org] + larsoft_commenters
+    valid_commenter = commenter in TRIGGER_PR_TESTS + list(CMSSW_L2.keys()) + CMSSW_L1 + releaseManagers + [repo_org]
     if (not valid_commenter) and (requestor!=commenter): continue
     comment_msg = comment.body.encode("ascii", "ignore") if comment.body else ""
     if (commenter in COMMENT_CONVERSION) and (comment.created_at<=COMMENT_CONVERSION[commenter]['comments_before']):
@@ -636,7 +522,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
       if (assign_type == "new categories assigned:") and (commenter == cmsbuild_user):
         for ex_cat in new_cats:
           if ex_cat in assign_cats: assign_cats[ex_cat] = 1
-      if ((commenter in larsoft_l2_mems) or (commenter in larsoft_core_mems) or (commenter in  CMSSW_ISSUES_TRACKERS + larsoft_l1_mems)):
+      if ((commenter in CMSSW_L2) or (commenter in  CMSSW_ISSUES_TRACKERS + CMSSW_L1)):
         if assign_type == "assign":
           for ex_cat in new_cats:
             if not ex_cat in signing_categories:
@@ -654,18 +540,18 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     # Some of the special users can say "hold" prevent automatic merging of
     # fully signed PRs.
     if re.match("^hold$", first_line, re.I):
-      if commenter in larsoft_l1_mems + larsoft_l2_mems + larsoft_core_mems + releaseManagers + PR_HOLD_MANAGERS: hold[commenter]=1 
+      if commenter in CMSSW_L1 + list(CMSSW_L2.keys()) + releaseManagers + PR_HOLD_MANAGERS: hold[commenter]=1
       continue
     if re.match(REGEX_EX_CMDS, first_line, re.I):
-      if commenter in larsoft_l1_mems + larsoft_l2_mems + larsoft_core_mems + releaseManagers + [requestor]:
+      if commenter in CMSSW_L1 + list(CMSSW_L2.keys()) + releaseManagers + [requestor]:
         check_extra_labels(first_line.lower(), extra_labels)
       continue
     if re.match(REGEX_EX_IGNORE_CHKS, first_line, re.I):
-      if commenter in larsoft_l1_mems + larsoft_l2_mems + larsoft_core_mems + releaseManagers:
+      if commenter in CMSSW_L1 + list(CMSSW_L2.keys()) + releaseManagers:
         ignore_tests = check_ignore_bot_tests (first_line.split(" ",1)[-1])
       continue
     if re.match(REGEX_EX_ENABLE_TESTS, first_line, re.I):
-      if commenter in larsoft_l1_mems + larsoft_l2_mems + larsoft_core_mems + releaseManagers:
+      if commenter in CMSSW_L1 + list(CMSSW_L2.keys()) + releaseManagers:
         enable_tests = check_enable_bot_tests (first_line.split(" ",1)[-1])
       continue
     if re.match('^allow\s+@([^ ]+)\s+test\s+rights$',first_line, re.I):
@@ -677,9 +563,9 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
           print("Added user in test category:",tester)
       continue
     if re.match("^unhold$", first_line, re.I):
-      if commenter in larsoft_l1_mems:
+      if commenter in CMSSW_L1:
         hold = {}
-      elif commenter in larsoft_l2_mems + larsoft_core_mems + releaseManagers + PR_HOLD_MANAGERS:
+      elif commenter in list(CMSSW_L2.keys()) + releaseManagers + PR_HOLD_MANAGERS:
         if commenter in hold: del hold[commenter]
       continue
     if (commenter == cmsbuild_user) and (re.match("^"+HOLD_MSG+".+", first_line)):
@@ -774,15 +660,14 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
 
     if issue.pull_request or push_test_issue:
       # Check if the release manager asked for merging this.
-      if (commenter in releaseManagers + larsoft_l1_mems) and re.match("^\s*(merge)\s*$", first_line, re.I):
+      if (commenter in releaseManagers + CMSSW_L1) and re.match("^\s*(merge)\s*$", first_line, re.I):
         mustMerge = True
         mustClose = False
-        if (commenter in larsoft_l1_mems) and ("L1" in signatures): signatures["L1"] = "approved"
+        if (commenter in CMSSW_L1) and ("orp" in signatures): signatures["orp"] = "approved"
         continue
 
       # Check if the someone asked to trigger the tests
       if valid_commenter:
-        test_cmd_func = check_test_cmd_lar
         ok, v2, v3, v4 = check_test_cmd(first_line, repository)
         if ok:
           cmssw_prs = v2
@@ -820,7 +705,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
           signatures["tests"] = "pending"
 
     # Check L2 signoff for users in this PR signing categories
-    if commenter in larsoft_l2_mems or commenter in larsoft_core_mems  and [x for x in CMSSW_L2[commenter] if x in signing_categories]:
+    if commenter in CMSSW_L2 and [x for x in CMSSW_L2[commenter] if x in signing_categories]:
       ctype = ""
       selected_cats = []
       if re.match("^([+]1|approve[d]?|sign|signed)$", first_line, re.I):
@@ -840,12 +725,12 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         for sign in selected_cats:
           signatures[sign] = "approved"
           has_categories_approval = True
-          if sign == "L1": mustClose = False
+          if sign == "orp": mustClose = False
       elif ctype == "-1":
         for sign in selected_cats:
           signatures[sign] = "rejected"
           has_categories_approval = False
-          if sign == "L1": mustClose = False
+          if sign == "orp": mustClose = False
       elif ctype == "reopen":
         if "orp" in CMSSW_L2[commenter]:
           signatures["orp"] = "pending"
@@ -886,8 +771,8 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
   print("All assigned cats:",",".join(list(assign_cats.keys())))
   print("Newly assigned cats:",",".join(new_assign_cats))
   print("Ignore tests:",ignore_tests)
-  print("Enabled tests:",enable_tests)
-  print("Tests: %s" % ( cmssw_prs))
+  print("Enable tests:",enable_tests)
+  print("Tests: %s" % (cmssw_prs))
 
   # Labels coming from signature.
   labels = []
@@ -952,7 +837,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
   missingApprovals = [x
                       for x in labels
                       if     not x.endswith("-approved")
-                         and not x.startswith("L1")
+                         and not x.startswith("orp")
                          and not x.startswith("tests")
                          and not x.startswith("pending-assignment")
                          and not x.startswith("comparison")
@@ -963,12 +848,12 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
   if not missingApprovals:
     print("The pull request is complete.")
   if missingApprovals:
-    labels.append("signatures-pending")
+    labels.append("pending-signatures")
   elif not "pending-assignment" in labels:
     labels.append("fully-signed")
   if need_external: labels.append("requires-external")
   labels = set(labels)
-  print("New Labels:",sorted(labels))
+  print("New Labels:", sorted(labels))
 
   new_categories  = set ([])
   for nc_lab in pkg_categories:
@@ -1014,7 +899,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
                         " %(name)s.\n\n"
                         "%(l2s)s can you please review it and eventually sign/assign?"
                         " Thanks.\n\n"
-                        "cms-bot commands are listed <a href=\"https://cdcvs.fnal.gov/redmine/projects/larsoft/wiki/Pull_request_comments_that_trigger_CI_actions\">here</a>\n%(backport_msg)s",
+                        "cms-bot commands are listed <a href=\"http://cms-sw.github.io/cms-bot-cmssw-issues.html\">here</a>\n%(backport_msg)s",
                         msgPrefix=NEW_ISSUE_PREFIX,
                         user=requestor,
                         name=uname,
@@ -1093,7 +978,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
 
   autoMergeMsg = ""
   if (("fully-signed" in labels) and ("tests-approved" in labels) and
-      ((not "L1" in signatures) or (signatures["L1"] == "approved"))):
+      ((not "orp" in signatures) or (signatures["orp"] == "approved"))):
     autoMergeMsg = "This pull request will be automatically merged."
   else:
     if is_hold:
@@ -1107,9 +992,9 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
       autoMergeMsg = format("This pull request requires a new package and "
                             " will not be merged. %(managers)s",
                             managers=releaseManagersList)
-    elif ("L1" in signatures) and (signatures["L1"] != "approved"):
+    elif ("orp" in signatures) and (signatures["orp"] != "approved"):
       autoMergeMsg = format("This pull request will now be reviewed by the release team"
-                            " before it's merged. %(managers)s",
+                            " before it's merged. %(managers)s (and backports should be raised in the release meeting by the corresponding L2)",
                             managers=releaseManagersList)
 
   devReleaseRelVal = ""
@@ -1118,7 +1003,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
 
   if ("fully-signed" in labels) and (not "fully-signed" in old_labels):
     messageFullySigned = format("This pull request is fully signed and it will be"
-                              " merged to %(branch)s and built in the next LArSoft release"
+                              " integrated in one of the next %(branch)s IBs"
                               "%(requiresTest)s"
                               "%(devReleaseRelVal)s."
                               " %(autoMerge)s",
@@ -1134,8 +1019,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
                             for name, l2_categories in list(CMSSW_L2.items())
                             for signature in signing_categories
                             if signature in l2_categories
-                               and signature in unsigned and signature not in ["L1"]
-                               and name not in set( larsoft_l1_mems + larsoft_l2_mems + larsoft_core_mems)]
+                               and signature in unsigned and signature not in ["orp"] ]
 
   missing_notifications = set(missing_notifications)
   # Construct message for the watchers
@@ -1177,7 +1061,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
                         "%(watchers)s"
                         "%(releaseManagers)s"
                         "%(patch_branch_warning)s\n"
-                        "cms-bot commands are listed <a href=\"https://cdcvs.fnal.gov/redmine/projects/larsoft/wiki/Pull_request_comments_that_trigger_CI_actions\">here</a>\n",
+                        "cms-bot commands are listed <a href=\"http://cms-sw.github.io/cms-bot-cmssw-cmds.html\">here</a>\n",
                         msgPrefix=NEW_PR_PREFIX,
                         user=pr.user.login,
                         name=pr.user.name and "(%s)" % pr.user.name or "",
@@ -1223,7 +1107,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
   elif (not already_seen) or pull_request_updated:
     if not already_seen: commentMsg = messageNewPR
     else: commentMsg = messageUpdatedPR
-    if (not triggerred_code_checks) and cmssw_repo and (pr.base.ref=="develop") and ("code-checks" in signatures) and (signatures["code-checks"]=="pending"):
+    if (not triggerred_code_checks) and cmssw_repo and (pr.base.ref=="master") and ("code-checks" in signatures) and (signatures["code-checks"]=="pending"):
       trigger_code_checks=True
   elif new_categories:
     commentMsg = messageUpdatedPR
@@ -1237,11 +1121,6 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
       print(commentMsg.decode("ascii", "replace"))
     except:
       pass
- 
-  # create new pull request message before code-check message
-  if commentMsg and not dryRun:
-    issue.create_comment(commentMsg)
-  
   print("Code Checks:", trigger_code_checks, triggerred_code_checks)
   if trigger_code_checks and not triggerred_code_checks:
     if not dryRunOrig: issue.create_comment(TRIGERING_CODE_CHECK_MSG)
@@ -1249,11 +1128,13 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     params = {"PULL_REQUEST" : "%s" % (prId)}
     create_properties_file_tests(repository, prId, params, dryRunOrig, abort=False, req_type="codechecks")
 
+  if commentMsg and not dryRun:
+    issue.create_comment(commentMsg)
 
   # Check if it needs to be automatically merged.
   if all(["fully-signed" in labels,
           "tests-approved" in labels,
-          "L1-approved" in labels,
+          "orp-approved" in labels,
           not "hold" in labels,
           not "new-package-pending" in labels]):
     print("This pull request can be automatically merged")

@@ -451,15 +451,16 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     if pr.changed_files==0:
       print("Ignoring: PR with no files changed")
       return
-    if cmssw_repo and cms_repo and (pr.base.ref == CMSSW_DEVEL_BRANCH):
+    pr-base-ref = pr.base.ref
+    if cmssw_repo and cms_repo and (pr-base-ref != "develop"):
       if pr.state != "closed":
-        print("This pull request must go in to master branch")
+        print("This pull request must go in to develop branch")
         if not dryRun:
-          edit_pr(get_token(gh), repo.full_name, prId, base="master")
-          msg = format("@%(user)s, %(dev_branch)s branch is closed for direct updates. cms-bot is going to move this PR to master branch.\n"
-                       "In future, please use cmssw master branch to submit your changes.\n",
+          edit_pr(get_token(gh), repo.full_name, prId, base="develop")
+          msg = format("@%(user)s, %(dev_branch)s branch is closed for direct updates. cms-bot is going to move this PR to develop branch.\n"
+                       "In future, please use cmssw develop branch to submit your changes.\n",
                        user=requestor,
-                       dev_branch=CMSSW_DEVEL_BRANCH)
+                       dev_branch=pr-base-ref)
           issue.create_comment(msg)
       return
     # A pull request is by default closed if the branch is a closed one.
@@ -468,7 +469,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     # signatures it requires.
     if cmssw_repo or not external_repo:
       if cmssw_repo:
-        if (pr.base.ref=="master"): signing_categories.add("code-checks")
+        if (pr.base.ref=="develop"): signing_categories.add("code-checks")
         updateMilestone(repo, issue, pr, dryRun)
       packages = sorted([x for x in set([cmssw_file2Package(repo_config, f)
                            for f in get_changed_files(repo, pr)])])
@@ -1223,7 +1224,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
   elif (not already_seen) or pull_request_updated:
     if not already_seen: commentMsg = messageNewPR
     else: commentMsg = messageUpdatedPR
-    if (not triggerred_code_checks) and cmssw_repo and (pr.base.ref=="develop") and ("code-checks" in signatures) and (signatures["code-checks"]=="pending"):
+    if (not triggerred_code_checks) and cmssw_repo) and ("code-checks" in signatures) and (signatures["code-checks"]=="pending"):
       trigger_code_checks=True
   elif new_categories:
     commentMsg = messageUpdatedPR
