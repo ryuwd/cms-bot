@@ -345,7 +345,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
             print ("TEST WILL NOW BE TRIGGERED: %s" % test)
             # trigger the test in jenkins
             create_properties_file_for_test(
-                name,
+                test,
                 repo.full_name,
                 prId,
                 git_commit.sha,
