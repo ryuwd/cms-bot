@@ -1,10 +1,11 @@
-#!/bin/bash -e
+#!/bin/bash -ex
 export WORKSPACE=$(/bin/pwd -P)
 export KEEP_SOURCE_GIT=true
 export BUILD_DIR=externals
 ARCH=""
 CMSDIST_BR=""
 PRS=""
+RELEASE_QUEUE=""
 while [ "$#" != 0 ]; do
   case "$1" in
     -h|--help)
@@ -17,8 +18,11 @@ while [ "$#" != 0 ]; do
     -a|--architecture)
       ARCH=$2 ; shift ; shift
       ;;
+    -r|--release)
+      RELEASE_QUEUE=$2 ; shift ; shift
+      ;;
     *)
-      PRS="$PRS $1" ; shift
+      PRS="$PRS $(echo $1 | tr ',' ' ')" ; shift
       ;;
   esac
 done
@@ -36,17 +40,15 @@ let NCPU=$(${COMMON}/get_cpu_number.sh)/2
 #Clone and merge PRs
 for PR in $(echo $PRS | tr ' ' '\n' | grep -v '/cmssw#') ; do
   REPO=$(echo ${PR} | sed 's|#.*||;s|.*/||')
-  if [ ! -e ${REPO} ] ; then
-    echo "Cloning ${REPO} and merging ${PR}"
-    git_clone_and_merge $(get_cached_GH_JSON ${PR}) </dev/null
-  fi
+  echo "Cloning ${REPO} and merging ${PR}"
+  git_clone_and_merge $(get_cached_GH_JSON ${PR}) </dev/null
   if [ "$CMSDIST_BR" = "" -a $(echo "$PR" | grep "/cmsdist#" | wc -l) -gt 0 ] ; then
     CMSDIST_BR=$(get_base_branch ${PR})
   fi
 done
 
 #Find CMSSW configuration
-CONFIG_LINE=$(${COMMON}/get_config_map_line.sh "" "${CMSDIST_BR}" "${ARCH}")
+CONFIG_LINE=$(${COMMON}/get_config_map_line.sh "${RELEASE_QUEUE}" "${CMSDIST_BR}" "${ARCH}")
 if [ "$CONFIG_LINE" = "" ] ; then
   echo "ERROR: Unable to find configuration for cmsdist branch ${CMSDIST_BR} in ${CMS_BOT_DIR}/config.map"
   exit 1
@@ -92,9 +94,9 @@ fi
 #Build externals
 COMPILATION_CMD="PYTHONPATH= ./pkgtools/cmsBuild --weekly -i ${BUILD_DIR} ${SOURCE_FLAG} --arch $SCRAM_ARCH -j ${NCPU} build cmssw-tool-conf"
 echo "${COMPILATION_CMD}"
-[ -e $WORKSPACE/$BUILD_DIR/cmsswtoolconf.log ] && mv $WORKSPACE/$BUILD_DIR/cmsswtoolconf.log $WORKSPACE/$BUILD_DIR/cmsswtoolconf.log.$(date +%s)
-eval $COMPILATION_CMD 2>&1 | tee $WORKSPACE/$BUILD_DIR/cmsswtoolconf.log
-TOOL_CONF_VER=$(grep 'Package cms+cmssw-tool-conf+' $WORKSPACE/$BUILD_DIR/cmsswtoolconf.log | head -1 | sed 's|.*Package cms+cmssw-tool-conf+||;s| .*||g')
+[ -e $WORKSPACE/cmsswtoolconf.log ] && mv $WORKSPACE/cmsswtoolconf.log $WORKSPACE/cmsswtoolconf.log.$(date +%s)
+eval $COMPILATION_CMD 2>&1 | tee $WORKSPACE/cmsswtoolconf.log
+TOOL_CONF_VER=$(grep ' cms+cmssw-tool-conf+' $WORKSPACE/cmsswtoolconf.log | head -1 | sed 's|.* cms+cmssw-tool-conf+||;s| .*||g')
 
 #Find CMSSW IB to use to test externals
 CMSSW_IB=$(scram -a $SCRAM_ARCH l -c $CMSSW_QUEUE | grep -v -f "${CMS_BOT_DIR}/ignore-releases-for-tests" | awk '{print $2}' | sort -r | head -1)
