@@ -178,7 +178,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
 
     # this will be the commit of master that the PR is merged
     # into for the CI tests (for a build test this is just the current HEAD.)
-    master_commit_sha = repo.get_branch("master").commit
+    master_commit_sha = repo.get_branch("master").commit.sha
 
     # get latest commit
     last_commit = pr.get_commits().reversed[0]
@@ -248,7 +248,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
             test_statuses[name] = 'running'
 
         # check if we've stalled
-        if (test_statuses[name] in ['running', 'pending']):
+        if (test_statuses[name] in ['running', 'pending']) and (name in test_triggered) and test_triggered[name]:
             if (datetime.utcnow() - stat.updated_at).total_seconds() > test_suites.get_stall_time(name):
                 test_triggered[name] = False # the test may be triggered again.
                 test_statuses[name] = 'stalled'
