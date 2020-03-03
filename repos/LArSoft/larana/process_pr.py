@@ -313,8 +313,8 @@ def check_test_cmd_lar(first_line, repo):
     prs= []
     cmssw_queue = ""
 
-    if m.group(5):
-      for pr in [x.strip().split('/github.com/',1)[-1].replace('/pull/','#').strip('/') for x in m.group(5).split(",")]:
+    if m.group(6):
+      for pr in [x.strip().split('/github.com/',1)[-1].replace('/pull/','#').strip('/') for x in m.group(6).split(",")]:
         while '//' in pr: pr = pr.replace('//','/')
         if pr.startswith('#'): pr = repo+pr
         prs.append(pr)
