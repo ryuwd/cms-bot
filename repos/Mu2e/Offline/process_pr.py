@@ -225,6 +225,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         'pending': 'ffbf00',
         'running': 'a4e8f9',
         'success': '238823',
+        'finish': '238823',
         'stalled': 'ededed'
     }
 
