@@ -304,8 +304,8 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
             continue
 
         # neglect comments by un-authorised users
-        if not comment.user.login in authorised_users:
-            print("IGNORE COMMENT (unauthorised) - %s." % comment.user.login)
+        if not comment.user.login in authorised_users or comment.user.login == repo_config.CMSBUILD_USER:
+            print("IGNORE COMMENT (unauthorised or bot user) - %s." % comment.user.login)
             continue
 
         # now look for bot triggers
