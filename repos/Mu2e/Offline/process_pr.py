@@ -219,6 +219,15 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         'success': 'finished',
     }
 
+    state_labels_colors = {
+        'error': 'd73a4a',
+        'failure': 'd2222d',
+        'pending': 'ffbf00',
+        'running': 'a4e8f9',
+        'success': '238823',
+        'stalled': 'ededed'
+    }
+
     commit_status_time = {}
 
     for stat in commit_status:
@@ -393,6 +402,19 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         if not dryRun:
             issue.edit(labels=labels)
         print ("Labels have changed to: ", labels)
+
+    # check label colours
+    try:
+        for label in issue.labels:
+            if label.color == 'ededed':
+                # the label color isn't set
+                for labelcontent, col in state_labels_colors.keys():
+                    if labelcontent in label.name:
+                        label.edit(label.name, col)
+                        break
+    except:
+        print ("Failed to set label colours!")
+
 
 
     # construct a reply if tests have been triggered.
