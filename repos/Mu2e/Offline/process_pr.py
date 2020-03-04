@@ -408,7 +408,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         for label in issue.labels:
             if label.color == 'ededed':
                 # the label color isn't set
-                for labelcontent, col in state_labels_colors.keys():
+                for labelcontent, col in state_labels_colors.items():
                     if labelcontent in label.name:
                         label.edit(label.name, col)
                         break
