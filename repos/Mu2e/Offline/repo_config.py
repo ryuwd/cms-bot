@@ -1,5 +1,5 @@
 from os.path import basename,dirname,abspath
-GH_CMSSW_ORGANIZATION="ryuwd"
+GH_CMSSW_ORGANIZATION="Mu2e"
 GH_CMSSW_REPO="Offline"
 
 
@@ -15,7 +15,7 @@ CMSBUILD_USER="FNALbuild"
 CMSBUILD_GH_USER = CMSBUILD_USER
 
 GH_REPO_ORGANIZATION=basename(dirname(CONFIG_DIR))
-GH_REPO_FULLNAME="ryuwd/Offline"
+GH_REPO_FULLNAME="Mu2e/Offline"
 CREATE_EXTERNAL_ISSUE=False
 
 #Jenkins CI server: User default http://cmsjenkins05.cern.ch:8080/cms-jenkins
