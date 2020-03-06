@@ -35,7 +35,7 @@ REGEX_CUSTOM_TEST_MU2E_PR = re.compile(TEST_REGEXP_CUSTOM_TEST_TRIGGER, re.I | r
 
 
 SUPPORTED_TESTS = ['build', 'code checks', 'validation']
-DEFAULT_TESTS = ['build', 'code checks']
+DEFAULT_TESTS = ['build']
 
 
 TEST_ALIASES = {
