@@ -110,7 +110,7 @@ def get_modified(modified_files):
 
 def get_authorised_users(gh, repo):
     mu2eorg = gh.get_organization("Mu2e")
-    mu2e_write = ['ryuwd'] + mu2eorg.get_team_by_slug('write')
+    mu2e_write = mu2eorg.get_team_by_slug('write')
     mu2e_write_mems =['ryuwd'] + [mem.login for mem in mu2e_write.get_members()]
 
     # users authorised to communicate with this bot
