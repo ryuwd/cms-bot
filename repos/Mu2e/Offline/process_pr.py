@@ -300,7 +300,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
             continue
 
         # neglect comments we've already responded to
-        if (comment.created_at < last_time_seen):
+        if last_time_seen is not None and (comment.created_at < last_time_seen):
             print ("IGNORE COMMENT (seen)", comment.user.login, comment.created_at, '<', last_time_seen)
             continue
 
