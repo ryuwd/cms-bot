@@ -54,9 +54,12 @@ def check_test_cmd_mu2e(full_comment, repository):
         if handle is None:
             continue
 
-        return handle
+        return handle, True
 
-    return None
+    if test_suites.regex_mentioned.search(full_comment) is not None:
+        return None, True
+
+    return None, False
 
 # Read a yaml file
 def read_repo_file(repo_config, repo_file, default=None):
@@ -132,6 +135,8 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         return
 
     authorised_users = get_authorised_users(gh, repo)
+
+    print ("Authorised Users: ", authorised_users)
 
     not_seen_yet = True
     last_time_seen = None
@@ -221,7 +226,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
 
     state_labels_colors = {
         'error': 'd73a4a',
-        'failure': 'd2222d',
+        'fail': 'd2222d',
         'pending': 'ffbf00',
         'running': 'a4e8f9',
         'success': '238823',
@@ -284,19 +289,18 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
     print ("Last time seen", last_time_seen)
 
     # we might not have commented, but e.g. changed a label instead...
-    for event in pr.get_issue_events():
-        if event.actor.login == repo_config.CMSBUILD_USER and event.event in ['labeled', 'unlabeled']:
-            if last_time_seen is None or last_time_seen < event.created_at:
-                last_time_seen = event.created_at
-                print (last_time_seen, event)
-    print ("Last time seen", last_time_seen)
-
+    # for event in pr.get_issue_events():
+    #     if event.actor.login == repo_config.CMSBUILD_USER and event.event in ['labeled', 'unlabeled']:
+    #         if last_time_seen is None or last_time_seen < event.created_at:
+    #             last_time_seen = event.created_at
+    #             print (last_time_seen, event)
+    # print ("Last time seen", last_time_seen)
 
     # now we process comments
     for comment in comments:
-
         # Ignore all messages which are before last commit.
         if (comment.created_at < last_commit_date):
+            print ("IGNORE COMMENT (before last commit)")
             continue
 
         # neglect comments we've already responded to
@@ -309,22 +313,29 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
             print("IGNORE COMMENT (unauthorised or bot user) - %s." % comment.user.login)
             continue
 
+        for react in comment.get_reactions():
+            if react.user.login == repo_config.CMSBUILD_USER:
+                print("IGNORE COMMENT (we've seen it and reacted to say we've seen it)", comment.user.login)
+
+
+        reaction_t = '+1'
         # now look for bot triggers
         # check if the comment has triggered a test
-        trigger_search = check_test_cmd_mu2e(comment.body, repo.full_name)
+        trigger_search, mentioned = check_test_cmd_mu2e(comment.body, repo.full_name)
         tests_already_triggered = []
 
         if trigger_search is not None:
             tests, _ = trigger_search
             print ("Triggered! Comment: %s" % comment.body)
-            print ('current test(s): %r' % tests_to_trigger)
-            print ('adding these test(s): %r' % tests )
+            print ('Current test(s): %r' % tests_to_trigger)
+            print ('Adding these test(s): %r' % tests )
 
             for test in tests:
                 # check that the test has been triggered on this commit first
                 if test in test_triggered and test_triggered[test]:
                         print ("The test has already been triggered for this ref. It will not be triggered again.")
                         tests_already_triggered.append(test)
+                        reaction_t = '-1'
                         continue
                 else:
                     test_triggered[test] = False
@@ -339,6 +350,12 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
 
                     # add the test to the queue of tests to trigger
                     tests_to_trigger.append(test)
+        elif mentioned:
+            # we didn't recognise any commands!
+            reaction_t = 'confused'
+
+        # "React" to the comment to let the user know we have acknowledged their comment!
+        comment.create_reaction(reaction_t)
 
 
     # now,
@@ -417,7 +434,6 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         print ("Failed to set label colours!")
 
 
-
     # construct a reply if tests have been triggered.
     tests_triggered_msg = ''
     already_running_msg = ''
@@ -456,4 +472,5 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
             issue.create_comment(TESTS_ALREADY_TRIGGERED.format(
                 commit_link=commitlink,
                 triggered_tests=', '.join(tests_already_triggered))
+
 )
