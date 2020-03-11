@@ -33,6 +33,11 @@ TEST_REGEXP_CUSTOM_TEST_TRIGGER = (
 )
 REGEX_CUSTOM_TEST_MU2E_PR = re.compile(TEST_REGEXP_CUSTOM_TEST_TRIGGER, re.I | re.M)
 
+TEST_MENTIONED = (
+    "(@%s)(\s*[,:;]*\s+|\s+)" % MU2E_BOT_USER
+)
+regex_mentioned = re.compile(TEST_MENTIONED, re.I | re.M)
+
 
 SUPPORTED_TESTS = ['build', 'code checks', 'validation']
 DEFAULT_TESTS = ['build', 'code checks']
