@@ -44,7 +44,10 @@ def check_test_cmd_mu2e(full_comment, repository):
     # desc: integration build tests -> mu2e/buildtest -> [jenkins project name]
     # desC: physics validation -> mu2e/validation -> [jenkins project name]
     print (" ====== matching regex to comment ======")
-    print (full_comment)
+    try:
+        print (repr(full_comment))
+    except:
+        print("could not print comment...")
 
     for regex, handler in test_suites.TESTS:
         # returns the first match in the comment
