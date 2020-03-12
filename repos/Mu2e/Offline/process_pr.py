@@ -22,7 +22,7 @@ which require these tests: {tests_required}.
 {watchers}
 {tests_triggered_msg}
 
-<a href="https://mu2ewiki.fnal.gov/wiki/Jenkins">cms-bot/mu2e commands are explained here</a>
+<a href="https://mu2ewiki.fnal.gov/wiki/Git#github_pull_request_procedures">cms-bot/mu2e commands are explained here</a>
 """
 
 TESTS_TRIGGERED_CONFIRMATION = """:hourglass: The following tests have been triggered for ref {commit_link}: {test_list} {tests_already_running_msg}"""
@@ -327,7 +327,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
                 print("IGNORE COMMENT (we've seen it and reacted to say we've seen it)", comment.user.login)
 
 
-        reaction_t = '+1'
+        reaction_t = None
         # now look for bot triggers
         # check if the comment has triggered a test
         trigger_search, mentioned = check_test_cmd_mu2e(comment.body, repo.full_name)
@@ -359,12 +359,14 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
 
                     # add the test to the queue of tests to trigger
                     tests_to_trigger.append(test)
+                    reaction_t = '+1'
         elif mentioned:
             # we didn't recognise any commands!
             reaction_t = 'confused'
 
-        # "React" to the comment to let the user know we have acknowledged their comment!
-        comment.create_reaction(reaction_t)
+        if reaction_t is not None:
+            # "React" to the comment to let the user know we have acknowledged their comment!
+            comment.create_reaction(reaction_t)
 
 
     # now,
