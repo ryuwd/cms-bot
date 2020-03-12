@@ -50,20 +50,20 @@ def check_test_cmd_mu2e(full_comment, repository):
         # returns the first match in the comment
         match = regex.search(full_comment)
         if match is None:
-            print (p.pattern, "NOT MATCHED")
+            print (regex.pattern, "NOT MATCHED")
             continue
         handle = handler(match)
 
         if handle is None:
-            print (p.pattern, "MATCHED - BUT NoneType HANDLE RETURNED")
+            print (regex.pattern, "MATCHED - BUT NoneType HANDLE RETURNED")
             continue
-        print (p.pattern, "MATCHED")
+        print (regex.pattern, "MATCHED")
         return handle, True
 
     if test_suites.regex_mentioned.search(full_comment) is not None:
-        print (p.pattern, "MATCHED - but unrecognised command")
+        print ("MATCHED - but unrecognised command")
         return None, True
-    print (p.pattern, "NO MATCHES")
+    print ("NO MATCHES")
  
     return None, False
 
