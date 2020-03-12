@@ -22,7 +22,7 @@ which require these tests: {tests_required}.
 {watchers}
 {tests_triggered_msg}
 
-<a href="https://mu2ewiki.fnal.gov/wiki/Jenkins">cms-bot/mu2e commands are explained here</a>
+<a href="https://mu2ewiki.fnal.gov/wiki/Git#github_pull_request_procedures">cms-bot/mu2e commands are explained here</a>
 """
 
 TESTS_TRIGGERED_CONFIRMATION = """:hourglass: The following tests have been triggered for ref {commit_link}: {test_list} {tests_already_running_msg}"""
