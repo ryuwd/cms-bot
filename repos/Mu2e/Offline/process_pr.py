@@ -43,22 +43,28 @@ def check_test_cmd_mu2e(full_comment, repository):
     # desc: code checks -> mu2e/codechecks (context name) -> [jenkins project name]
     # desc: integration build tests -> mu2e/buildtest -> [jenkins project name]
     # desC: physics validation -> mu2e/validation -> [jenkins project name]
+    print (" ====== matching regex to comment ======")
+    print (full_comment)
 
     for regex, handler in test_suites.TESTS:
         # returns the first match in the comment
         match = regex.search(full_comment)
         if match is None:
+            print (p.pattern, "NOT MATCHED")
             continue
         handle = handler(match)
 
         if handle is None:
+            print (p.pattern, "MATCHED - BUT NoneType HANDLE RETURNED")
             continue
-
+        print (p.pattern, "MATCHED")
         return handle, True
 
     if test_suites.regex_mentioned.search(full_comment) is not None:
+        print (p.pattern, "MATCHED - but unrecognised command")
         return None, True
-
+    print (p.pattern, "NO MATCHES")
+ 
     return None, False
 
 # Read a yaml file
