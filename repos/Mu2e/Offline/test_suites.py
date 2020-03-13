@@ -10,21 +10,21 @@ REGEX_DEFTEST_MU2E_PR = re.compile(TEST_REGEXP_MU2E_DEFTEST_TRIGGER, re.I | re.M
 
 # build test
 TEST_REGEXP_MU2E_BUILDTEST_TRIGGER = (
-    "(@%s)(\s*[,:;]*\s+|\s+)(please\s*[,]*\s+|)(run\s+(build\s*)test(s|)|(test\s+(build)))(\.|$)"
+    "(@%s)(\s*[,:;]*\s+|\s+)(please\s*[,]*\s+|)(run\s+(build\s*)test(s|)|(test\s+(build)))"
     % MU2E_BOT_USER
 )
 REGEX_BUILDTEST_MU2E_PR = re.compile(TEST_REGEXP_MU2E_BUILDTEST_TRIGGER, re.I | re.M)
 
 # code test
 TEST_REGEXP_MU2E_LINTTEST_TRIGGER = (
-    "(@%s)(\s*[,:;]*\s+|\s+)(please\s*[,]*\s+|)(run\s+(code\s*)(test(s|)|check(s)|lint(er|ing))|(test\s+code|check\s+code))(\.|$)"
+    "(@%s)(\s*[,:;]*\s+|\s+)(please\s*[,]*\s+|)(run\s+(code\s*)(test(s|)|check(s|)))"
     % MU2E_BOT_USER
 )
 REGEX_LINTTEST_MU2E_PR = re.compile(TEST_REGEXP_MU2E_LINTTEST_TRIGGER, re.I | re.M)
 
 # physics validation
 TEST_REGEXP_MU2E_VALIDATION_TRIGGER = (
-    "(@%s)(\s*[,:;]*\s+|\s+)(please\s*[,]*\s+|)(run\s+(V|v)alidation)(\.|$)" % MU2E_BOT_USER
+    "(@%s)(\s*[,:;]*\s+|\s+)(please\s*[,]*\s+|)(run\s+validation)" % MU2E_BOT_USER
 )
 REGEX_VALIDATIONTEST_MU2E_PR = re.compile(TEST_REGEXP_MU2E_VALIDATION_TRIGGER, re.I | re.M)
 
