@@ -367,6 +367,12 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
         if reaction_t is not None:
             # "React" to the comment to let the user know we have acknowledged their comment!
             comment.create_reaction(reaction_t)
+    
+    if not_seen_yet:
+        # trigger tests automatically at the start of a pull request:
+        tests_to_trigger.append('code checks')
+        test_triggered['code checks'] = True
+        test_statuses['code checks'] = 'pending'
 
 
     # now,
