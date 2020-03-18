@@ -28,6 +28,7 @@ EXTERNAL_REPOS =  [
                   "LArSoft/larpandoracontent",
                   "LArSoft/larsim",
                   "LArSoft/larreco",
+                  "LArSoft/larrecodnn",
                   "LArSoft/larwirecell",
                   "LArSoft/larsoft",
                   "LArSoft/larsoftobj",
