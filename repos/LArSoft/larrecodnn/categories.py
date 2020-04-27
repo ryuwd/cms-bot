@@ -33,6 +33,7 @@ EXTERNAL_REPOS =  [
                   "LArSoft/larsoft",
                   "LArSoft/larsoftobj",
                   "LArSoft/larutils",
+                  "LArSoft/webevd",
                   ]
 
 EXTERNAL_REPOS.remove( gh_user+"/"+gh_repo )
