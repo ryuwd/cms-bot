@@ -191,7 +191,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
 
     # this will be the commit of master that the PR is merged
     # into for the CI tests (for a build test this is just the current HEAD.)
-    master_commit_sha = repo.get_branch("master").commit.sha
+    master_commit_sha = pr.base.sha # repo.get_branch("master").commit.sha
 
     # get latest commit
     last_commit = pr.get_commits().reversed[0]
@@ -209,6 +209,7 @@ def process_pr(repo_config, gh, repo, issue, dryRun, cmsbuild_user=None, force=F
 
     print("Latest commit message: ", git_commit.message.encode("ascii", "ignore"))
     print("Latest commit sha: ", git_commit.sha)
+    print("Merging into: ",pr.base.ref, pr.base.sha)
     print("PR update time", pr.updated_at)
     print("Time UTC:", datetime.utcnow())
 
